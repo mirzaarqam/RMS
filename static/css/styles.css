@@ -38,3 +38,29 @@ button {
 button:hover {
     background-color: #218838;
 }
+
+/* In static/css/styles.css */
+.off-day {
+  background-color: #ffcccc;
+  font-weight: bold;
+}
+
+.half-day {
+  background-color: #ffffcc;
+  font-style: italic;
+}
+
+/* Add to static/css/styles.css */
+.export-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.export-button:hover {
+    background-color: #218838;
+}

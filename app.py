@@ -1,9 +1,12 @@
-# app.py
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 import sqlite3
+from datetime import datetime, timedelta
+import csv
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+
 
 # Initialize SQLite database
 def init_db():
@@ -34,14 +37,21 @@ def init_db():
             emp_id TEXT,
             date TEXT,
             shift TEXT,
-            status TEXT  -- 'OFF', 'Half Day', or 'Full Day'
+            status TEXT
         )
     ''')
 
     conn.commit()
     conn.close()
 
+
 init_db()
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,7 +59,6 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # Simple authentication (replace with proper auth later)
         if username == 'admin' and password == 'password':
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
@@ -57,8 +66,19 @@ def login():
             return "Invalid credentials"
     return render_template('login.html')
 
+
+@app.route('/dashboard')
+def dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+
 @app.route('/add_employee', methods=['GET', 'POST'])
 def add_employee():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         emp_id = request.form['emp_id']
         name = request.form['name']
@@ -68,31 +88,15 @@ def add_employee():
         cursor.execute('INSERT INTO employees (emp_id, name) VALUES (?, ?)', (emp_id, name))
         conn.commit()
         conn.close()
-
         return redirect(url_for('dashboard'))
-
     return render_template('add_employee.html')
 
-@app.route('/export_roster')
-def export_roster():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM roster')
-    rows = cursor.fetchall()
-
-    # Write to CSV
-    import csv
-    with open('roster.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['ID', 'Employee ID', 'Date', 'Shift', 'Status'])
-        writer.writerows(rows)
-
-    conn.close()
-
-    return "Roster exported successfully!"
 
 @app.route('/add_shift', methods=['GET', 'POST'])
 def add_shift():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         shift_name = request.form['shift_name']
         shift_code = request.form['shift_code']
@@ -104,43 +108,50 @@ def add_shift():
                        (shift_name, shift_code, duration))
         conn.commit()
         conn.close()
-
         return redirect(url_for('dashboard'))
-
     return render_template('add_shift.html')
+
 
 @app.route('/create_roster', methods=['GET', 'POST'])
 def create_roster():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         emp_id = request.form['emp_id']
         month = request.form['month']
-        shift = request.form['shift']
+        shift_id = request.form['shift']
         off_day = 'OFF' if 'off_day' in request.form else ''
         half_day = 'Half Day' if 'half_day' in request.form else ''
 
         status = off_day or half_day or 'Full Day'
 
-        # Generate dates for the selected month
-        from datetime import datetime
-        start_date = datetime.strptime(month + '-01', '%Y-%m-%d')
-        if start_date.month == 12:
-            next_month = start_date.replace(year=start_date.year + 1, month=1)
-        else:
-            next_month = start_date.replace(month=start_date.month + 1)
-        dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d')
-                 for i in range((next_month - start_date).days)]
-
+        # Get shift details
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
+        cursor.execute('SELECT shift_name, shift_code FROM shifts WHERE id = ?', (shift_id,))
+        shift_details = cursor.fetchone()
+        shift_display = f"{shift_details[0]} ({shift_details[1]})" if shift_details else ''
+
+        # Generate dates for the selected month
+        start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
+        next_month = start_date.replace(day=28) + timedelta(days=4)
+        end_date = next_month - timedelta(days=next_month.day)
+        dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d')
+                 for i in range((end_date - start_date).days + 1)]
+
+        # Insert roster entries
         for date in dates:
-            cursor.execute('INSERT INTO roster (emp_id, date, shift, status) VALUES (?, ?, ?, ?)',
-                           (emp_id, date, shift, status))
+            cursor.execute('''
+                INSERT INTO roster (emp_id, date, shift, status)
+                VALUES (?, ?, ?, ?)
+            ''', (emp_id, date, shift_display, status))
+
         conn.commit()
         conn.close()
-
         return redirect(url_for('roster_view'))
 
-    # Fetch employees and shifts for dropdowns
+    # Get employees and shifts for dropdowns
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT emp_id, name FROM employees')
@@ -151,31 +162,65 @@ def create_roster():
 
     return render_template('create_roster.html', employees=employees, shifts=shifts)
 
+
 @app.route('/roster_view')
 def roster_view():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Fetch unique dates
+    # Get all dates in roster
     cursor.execute('SELECT DISTINCT date FROM roster ORDER BY date')
     dates = [row[0] for row in cursor.fetchall()]
 
-    # Fetch roster data
-    cursor.execute('''
-        SELECT emp_id, GROUP_CONCAT(shift || ' (' || status || ')', ', ') AS shifts
-        FROM roster
-        GROUP BY emp_id
-    ''')
-    roster_data = cursor.fetchall()
+    # Get all employees
+    cursor.execute('SELECT emp_id FROM employees')
+    employees = [row[0] for row in cursor.fetchall()]
+
+    # Create roster matrix
+    roster = []
+    for emp_id in employees:
+        row = [emp_id]
+        for date in dates:
+            cursor.execute('''
+                SELECT shift || ' (' || status || ')' 
+                FROM roster 
+                WHERE emp_id = ? AND date = ?
+            ''', (emp_id, date))
+            result = cursor.fetchone()
+            row.append(result[0] if result else '')
+        roster.append(row)
 
     conn.close()
-
-    # Format roster data into a table
-    roster = []
-    for row in roster_data:
-        emp_id = row[0]
-        shifts = row[1].split(', ')
-        roster.append([emp_id] + shifts)
-
     return render_template('roster_view.html', dates=dates, roster=roster)
 
+
+@app.route('/export_roster')
+def export_roster():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT e.name, r.emp_id, r.date, r.shift, r.status 
+        FROM roster r
+        JOIN employees e ON r.emp_id = e.emp_id
+        ORDER BY e.name, r.date
+    ''')
+    rows = cursor.fetchall()
+    conn.close()
+
+    filename = 'roster.csv'
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Employee Name', 'Employee ID', 'Date', 'Shift', 'Status'])
+        writer.writerows(rows)
+
+    return send_file(filename, as_attachment=True)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

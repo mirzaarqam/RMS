@@ -1,32 +1,33 @@
-<!-- templates/roster_view.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Roster View</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-    <h2>Roster View</h2>
-    <table border="1">
-        <thead>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Roster View</h2>
+
+<!-- Export Button -->
+<div class="export-section">
+    <a href="{{ url_for('export_roster') }}" class="export-button">Export to CSV</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Employee ID</th>
+            {% for date in dates %}
+                <th>{{ date }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in roster %}
             <tr>
-                <th>Employee ID</th>
-                {% for date in dates %}
-                    <th>{{ date }}</th>
+                <td>{{ row[0] }}</td>
+                {% for cell in row[1:] %}
+                    <td class="{{ 'off-day' if 'OFF' in cell else 'half-day' if 'Half' in cell else '' }}">
+                        {{ cell }}
+                    </td>
                 {% endfor %}
             </tr>
-        </thead>
-        <tbody>
-            {% for row in roster %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    {% for cell in row[1:] %}
-                        <td>{{ cell }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

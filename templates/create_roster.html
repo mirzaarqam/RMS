@@ -1,38 +1,83 @@
-<!-- templates/create_roster.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Roster</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-    <h2>Create Roster</h2>
-    <form method="POST" action="/create_roster">
+<!-- Updated create_roster.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create Roster</h2>
+<form method="POST" action="{{ url_for('create_roster') }}">
+    <div class="form-group">
         <label for="emp_id">Employee ID:</label>
         <select id="emp_id" name="emp_id" required>
             {% for employee in employees %}
                 <option value="{{ employee[0] }}">{{ employee[1] }} ({{ employee[0] }})</option>
             {% endfor %}
-        </select><br>
+        </select>
+    </div>
 
+    <div class="form-group">
         <label for="month">Month:</label>
-        <input type="month" id="month" name="month" required><br>
+        <input type="month" id="month" name="month" required>
+    </div>
 
+    <div class="form-group">
         <label for="shift">Shift:</label>
         <select id="shift" name="shift" required>
             {% for shift in shifts %}
                 <option value="{{ shift[0] }}">{{ shift[1] }} ({{ shift[2] }})</option>
             {% endfor %}
-        </select><br>
+        </select>
+    </div>
 
-        <label>Mark Off/Half Day:</label><br>
-        <input type="checkbox" id="off_day" name="off_day">
-        <label for="off_day">OFF Day</label><br>
-        <input type="checkbox" id="half_day" name="half_day">
-        <label for="half_day">Half Day</label><br>
+    <div class="form-group">
+        <label>Total OFF Days:</label>
+        <input type="number" id="total_off" name="total_off" min="0" value="0">
+    </div>
 
-        <button type="submit">Create Roster</button>
-    </form>
-</body>
-</html>
+    <div class="form-group">
+        <label>Total Half Days:</label>
+        <input type="number" id="total_half" name="total_half" min="0" value="0">
+    </div>
+
+    <div id="date-selection">
+        <!-- Date pickers will be dynamically added here -->
+    </div>
+
+    <button type="submit">Create Roster</button>
+</form>
+
+<script>
+document.getElementById('total_off').addEventListener('input', updateDates);
+document.getElementById('total_half').addEventListener('input', updateDates);
+document.getElementById('month').addEventListener('change', updateDates);
+
+function updateDates() {
+    const month = document.getElementById('month').value;
+    const totalOff = document.getElementById('total_off').value;
+    const totalHalf = document.getElementById('total_half').value;
+    const container = document.getElementById('date-selection');
+    container.innerHTML = '';
+
+    if (!month) return;
+
+    const date = new Date(month + '-01');
+    const year = date.getFullYear();
+    const monthIndex = date.getMonth();
+
+    function createDatePickers(count, type) {
+        for (let i = 0; i < count; i++) {
+            const div = document.createElement('div');
+            div.className = 'date-picker';
+            div.innerHTML = `
+                <label>${type} Date ${i+1}:</label>
+                <input type="date" name="${type}_dates"
+                       min="${year}-${String(monthIndex+1).padStart(2, '0')}-01"
+                       max="${year}-${String(monthIndex+1).padStart(2, '0')}-${new Date(year, monthIndex + 1, 0).getDate()}">
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    createDatePickers(totalOff, 'off');
+    createDatePickers(totalHalf, 'half');
+}
+</script>
+{% endblock %}
