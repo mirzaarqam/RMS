@@ -1,0 +1,32 @@
+<!-- templates/roster_view.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roster View</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h2>Roster View</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                {% for date in dates %}
+                    <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in roster %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    {% for cell in row[1:] %}
+                        <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

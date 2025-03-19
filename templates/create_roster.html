@@ -1,0 +1,38 @@
+<!-- templates/create_roster.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Roster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h2>Create Roster</h2>
+    <form method="POST" action="/create_roster">
+        <label for="emp_id">Employee ID:</label>
+        <select id="emp_id" name="emp_id" required>
+            {% for employee in employees %}
+                <option value="{{ employee[0] }}">{{ employee[1] }} ({{ employee[0] }})</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="month">Month:</label>
+        <input type="month" id="month" name="month" required><br>
+
+        <label for="shift">Shift:</label>
+        <select id="shift" name="shift" required>
+            {% for shift in shifts %}
+                <option value="{{ shift[0] }}">{{ shift[1] }} ({{ shift[2] }})</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Mark Off/Half Day:</label><br>
+        <input type="checkbox" id="off_day" name="off_day">
+        <label for="off_day">OFF Day</label><br>
+        <input type="checkbox" id="half_day" name="half_day">
+        <label for="half_day">Half Day</label><br>
+
+        <button type="submit">Create Roster</button>
+    </form>
+</body>
+</html>
