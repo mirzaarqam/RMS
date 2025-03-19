@@ -1,29 +1,59 @@
-<!-- templates/add_shift.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Shift</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-    <h2>Add Shift</h2>
-    <form method="POST" action="/add_shift">
-        <label for="shift_name">Shift Name:</label>
-        <input type="text" id="shift_name" name="shift_name" required><br>
+{% extends "base.html" %}
 
-        <label for="shift_code">Shift Code:</label>
-        <input type="text" id="shift_code" name="shift_code" required><br>
+{% block content %}
+<h2>Add Shift</h2>
+<form method="POST" action="{{ url_for('add_shift') }}">
+    <div class="form-group">
+        <label>Shift Type:</label>
+        <select id="shift-type" name="type" required>
+            <option value="full">Full Day (6/8 hours)</option>
+            <option value="half">Half Day (3/4 hours)</option>
+        </select>
+    </div>
 
-        <label for="duration">Duration:</label>
+    <div class="form-group">
+        <label>Duration:</label>
         <select id="duration" name="duration" required>
-            <option value="3 hours">3 Hours</option>
-            <option value="4 hours">4 Hours</option>
-            <option value="6 hours">6 Hours</option>
-            <option value="8 hours">8 Hours</option>
-        </select><br>
+            <!-- Options populated dynamically -->
+        </select>
+    </div>
 
-        <button type="submit">Add Shift</button>
-    </form>
-</body>
-</html>
+    <div class="form-group">
+        <label>Shift Name:</label>
+        <input type="text" name="shift_name" required>
+    </div>
+
+    <div class="form-group">
+        <label>Shift Code:</label>
+        <input type="text" name="shift_code" required>
+    </div>
+
+    <button type="submit">Add Shift</button>
+</form>
+
+<script>
+document.getElementById('shift-type').addEventListener('change', function() {
+    const duration = document.getElementById('duration');
+    duration.innerHTML = '';
+
+    if (this.value === 'full') {
+        [6, 8].forEach(hours => {
+            const option = document.createElement('option');
+            option.value = hours;
+            option.textContent = `${hours} hours`;
+            duration.appendChild(option);
+        });
+    } else {
+        [3, 4].forEach(hours => {
+            const option = document.createElement('option');
+            option.value = hours;
+            option.textContent = `${hours} hours`;
+            duration.appendChild(option);
+        });
+    }
+});
+
+// Initialize on page load
+document.getElementById('shift-type').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

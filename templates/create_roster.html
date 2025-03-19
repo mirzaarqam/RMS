@@ -1,4 +1,3 @@
-<!-- Updated create_roster.html -->
 {% extends "base.html" %}
 
 {% block content %}
@@ -19,9 +18,9 @@
     </div>
 
     <div class="form-group">
-        <label for="shift">Shift:</label>
+        <label for="shift">Default Full-Day Shift:</label>
         <select id="shift" name="shift" required>
-            {% for shift in shifts %}
+            {% for shift in full_day_shifts %}
                 <option value="{{ shift[0] }}">{{ shift[1] }} ({{ shift[2] }})</option>
             {% endfor %}
         </select>
@@ -37,9 +36,7 @@
         <input type="number" id="total_half" name="total_half" min="0" value="0">
     </div>
 
-    <div id="date-selection">
-        <!-- Date pickers will be dynamically added here -->
-    </div>
+    <div id="date-selection"></div>
 
     <button type="submit">Create Roster</button>
 </form>
@@ -61,23 +58,38 @@ function updateDates() {
     const date = new Date(month + '-01');
     const year = date.getFullYear();
     const monthIndex = date.getMonth();
+    const lastDay = new Date(year, monthIndex + 1, 0).getDate();
 
-    function createDatePickers(count, type) {
+    function createDatePicker(count, type) {
         for (let i = 0; i < count; i++) {
             const div = document.createElement('div');
             div.className = 'date-picker';
-            div.innerHTML = `
+            let html = `
                 <label>${type} Date ${i+1}:</label>
                 <input type="date" name="${type}_dates"
                        min="${year}-${String(monthIndex+1).padStart(2, '0')}-01"
-                       max="${year}-${String(monthIndex+1).padStart(2, '0')}-${new Date(year, monthIndex + 1, 0).getDate()}">
+                       max="${year}-${String(monthIndex+1).padStart(2, '0')}-${lastDay}">
             `;
+
+            if (type === 'half') {
+                html += `
+                    <select name="half_shifts">
+                        {% for shift in half_day_shifts %}
+                            <option value="{{ shift[0] }}">
+                                {{ shift[1] }} ({{ shift[2] }} - {{ shift[3] }}h)
+                            </option>
+                        {% endfor %}
+                    </select>
+                `;
+            }
+
+            div.innerHTML = html;
             container.appendChild(div);
         }
     }
 
-    createDatePickers(totalOff, 'off');
-    createDatePickers(totalHalf, 'half');
+    createDatePicker(totalOff, 'off');
+    createDatePicker(totalHalf, 'half');
 }
 </script>
 {% endblock %}

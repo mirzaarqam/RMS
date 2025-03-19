@@ -27,7 +27,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             shift_name TEXT,
             shift_code TEXT,
-            duration TEXT
+            duration INTEGER,
+            type TEXT CHECK(type IN ('full', 'half'))
         )
     ''')
 
@@ -98,14 +99,17 @@ def add_shift():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
+        shift_type = request.form['type']
+        duration = int(request.form['duration'])
         shift_name = request.form['shift_name']
         shift_code = request.form['shift_code']
-        duration = request.form['duration']
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO shifts (shift_name, shift_code, duration) VALUES (?, ?, ?)',
-                       (shift_name, shift_code, duration))
+        cursor.execute('''
+            INSERT INTO shifts (shift_name, shift_code, duration, type)
+            VALUES (?, ?, ?, ?)
+        ''', (shift_name, shift_code, duration, shift_type))
         conn.commit()
         conn.close()
         return redirect(url_for('dashboard'))
@@ -120,28 +124,53 @@ def create_roster():
     if request.method == 'POST':
         emp_id = request.form['emp_id']
         month = request.form['month']
-        shift_id = request.form['shift']
-        off_day = 'OFF' if 'off_day' in request.form else ''
-        half_day = 'Half Day' if 'half_day' in request.form else ''
+        default_shift_id = request.form['shift']
+        total_off = int(request.form['total_off'])
+        total_half = int(request.form['total_half'])
 
-        status = off_day or half_day or 'Full Day'
+        off_dates = request.form.getlist('off_dates')
+        half_dates = request.form.getlist('half_dates')
+        half_shifts = request.form.getlist('half_shifts')
 
-        # Get shift details
+        # Validation
+        if len(off_dates) != total_off or len(half_dates) != total_half:
+            return "Date count mismatch"
+
+        # Get default shift details
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute('SELECT shift_name, shift_code FROM shifts WHERE id = ?', (shift_id,))
-        shift_details = cursor.fetchone()
-        shift_display = f"{shift_details[0]} ({shift_details[1]})" if shift_details else ''
+        cursor.execute('SELECT shift_name, shift_code FROM shifts WHERE id = ?', (default_shift_id,))
+        default_shift = cursor.fetchone()
+        default_shift_display = f"{default_shift[0]} ({default_shift[1]})" if default_shift else ''
 
-        # Generate dates for the selected month
+        # Get half shift details
+        half_shift_details = {}
+        for shift_id in half_shifts:
+            cursor.execute('SELECT shift_name, shift_code FROM shifts WHERE id = ?', (shift_id,))
+            half_shift_details[shift_id] = cursor.fetchone()
+
+        # Generate all dates
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         next_month = start_date.replace(day=28) + timedelta(days=4)
         end_date = next_month - timedelta(days=next_month.day)
-        dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d')
-                 for i in range((end_date - start_date).days + 1)]
+        all_dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d')
+                     for i in range((end_date - start_date).days + 1)]
 
         # Insert roster entries
-        for date in dates:
+        for date in all_dates:
+            status = 'Full Day'
+            shift_display = default_shift_display
+
+            if date in off_dates:
+                status = 'OFF'
+                shift_display = 'N/A'
+            elif date in half_dates:
+                status = 'Half Day'
+                idx = half_dates.index(date)
+                shift_id = half_shifts[idx]
+                shift = half_shift_details.get(shift_id, ('N/A', 'N/A'))
+                shift_display = f"{shift[0]} ({shift[1]})"
+
             cursor.execute('''
                 INSERT INTO roster (emp_id, date, shift, status)
                 VALUES (?, ?, ?, ?)
@@ -156,12 +185,19 @@ def create_roster():
     cursor = conn.cursor()
     cursor.execute('SELECT emp_id, name FROM employees')
     employees = cursor.fetchall()
-    cursor.execute('SELECT id, shift_name, shift_code FROM shifts')
-    shifts = cursor.fetchall()
+
+    # Separate full and half day shifts
+    cursor.execute('SELECT * FROM shifts WHERE type = "full"')
+    full_day_shifts = cursor.fetchall()
+    cursor.execute('SELECT * FROM shifts WHERE type = "half"')
+    half_day_shifts = cursor.fetchall()
+
     conn.close()
 
-    return render_template('create_roster.html', employees=employees, shifts=shifts)
-
+    return render_template('create_roster.html',
+                           employees=employees,
+                           full_day_shifts=full_day_shifts,
+                           half_day_shifts=half_day_shifts)
 
 @app.route('/roster_view')
 def roster_view():
@@ -223,4 +259,5 @@ def export_roster():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
