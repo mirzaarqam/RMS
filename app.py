@@ -258,6 +258,48 @@ def export_roster():
     return send_file(filename, as_attachment=True)
 
 
+@app.route('/edit_shift/<emp_id>/<date>', methods=['GET', 'POST'])
+def edit_shift(emp_id, date):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        new_shift = request.form['shift']
+        new_status = request.form['status']
+
+        cursor.execute('''
+            UPDATE roster 
+            SET shift = ?, status = ?
+            WHERE emp_id = ? AND date = ?
+        ''', (new_shift, new_status, emp_id, date))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for('roster_view'))
+
+    # Get current shift data
+    cursor.execute('''
+        SELECT shift, status 
+        FROM roster 
+        WHERE emp_id = ? AND date = ?
+    ''', (emp_id, date))
+    current_data = cursor.fetchone()
+
+    # Get available shifts
+    cursor.execute('SELECT * FROM shifts')
+    shifts = cursor.fetchall()
+
+    conn.close()
+
+    return render_template('edit_shift.html',
+                           emp_id=emp_id,
+                           date=date,
+                           current_data=current_data,
+                           shifts=shifts)
+
 if __name__ == '__main__':
     #app.run(debug=True)
     app.run(host='0.0.0.0', port=5000, debug=True)

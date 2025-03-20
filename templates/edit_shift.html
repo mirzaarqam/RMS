@@ -1,0 +1,46 @@
+<!-- templates/edit_shift.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Shift</h2>
+<form method="POST">
+    <div class="form-group">
+        <label>Employee ID:</label>
+        <input type="text" value="{{ emp_id }}" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Date:</label>
+        <input type="date" value="{{ date }}" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Status:</label>
+        <select name="status" required>
+            <option value="Full Day" {% if current_data[1] == 'Full Day' %}selected{% endif %}>
+                Full Day
+            </option>
+            <option value="OFF" {% if current_data[1] == 'OFF' %}selected{% endif %}>
+                OFF
+            </option>
+            <option value="Half Day" {% if current_data[1] == 'Half Day' %}selected{% endif %}>
+                Half Day
+            </option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Shift:</label>
+        <select name="shift" required>
+            {% for shift in shifts %}
+                <option value="{{ shift[1] }} ({{ shift[2] }})"
+                        {% if shift[1] in current_data[0] %}selected{% endif %}>
+                    {{ shift[1] }} ({{ shift[2] }} - {{ shift[3] }}h)
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit">Update Shift</button>
+</form>
+{% endblock %}

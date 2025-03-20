@@ -64,3 +64,13 @@ button:hover {
 .export-button:hover {
     background-color: #218838;
 }
+
+.edit-link {
+    margin-left: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.edit-link:hover {
+    text-decoration: underline;
+}

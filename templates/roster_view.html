@@ -24,6 +24,8 @@
                 {% for cell in row[1:] %}
                     <td class="{{ 'off-day' if 'OFF' in cell else 'half-day' if 'Half' in cell else '' }}">
                         {{ cell }}
+                        <a href="{{ url_for('edit_shift', emp_id=row[0], date=dates[loop.index0]) }}"
+                           class="edit-link">Edit</a>
                     </td>
                 {% endfor %}
             </tr>
