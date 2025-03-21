@@ -1,0 +1,39 @@
+<!-- templates/shift_details.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Shift Details</h2>
+
+<!-- Add Shift Button -->
+<div style="text-align: right; margin-bottom: 10px;">
+    <a href="{{ url_for('add_shift') }}" class="add-button">Add Shift</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Shift Name</th>
+            <th>Shift Code</th>
+            <th>Duration (hours)</th>
+            <th>Type</th>
+            <th>Shift Timing</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for shift in shifts %}
+            <tr>
+                <td>{{ shift[1] }}</td> <!-- Shift Name -->
+                <td>{{ shift[2] }}</td> <!-- Shift Code -->
+                <td>{{ shift[3] }}</td> <!-- Duration -->
+                <td>{{ shift[4] }}</td> <!-- Type -->
+                <td>{{ shift[5] }}</td> <!-- Shift Timing -->
+                <td>
+                    <a href="{{ url_for('edit_shift_details', shift_id=shift[0]) }}" class="edit-link">Edit</a>
+                    <a href="{{ url_for('remove_shift', shift_id=shift[0]) }}" class="remove-link" onclick="return confirm('Are you sure you want to remove this shift?')">Remove</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

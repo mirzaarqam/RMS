@@ -116,34 +116,36 @@ def add_shift():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        shift_type = request.form['type']
-        duration = int(request.form['duration'])
         shift_name = request.form['shift_name']
         shift_code = request.form['shift_code']
+        duration = int(request.form['duration'])
+        shift_type = request.form['type']
         shift_start = request.form['shift_start']
         shift_end = request.form['shift_end']
-
-        # Validate that the duration matches the selected start and end times
-        start_hour = int(shift_start.split(':')[0])
-        end_hour = int(shift_end.split(':')[0])
-        actual_duration = (end_hour - start_hour) % 24
-
-        if actual_duration != duration:
-            return "Shift duration does not match the selected start and end times."
-
-        # Format shift timing
         shift_timing = f"{shift_start} - {shift_end}"
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO shifts (shift_name, shift_code, duration, type, shift_timing)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (shift_name, shift_code, duration, shift_type, shift_timing))
-        conn.commit()
-        conn.close()
 
-        return redirect(url_for('dashboard'))
+        # Check if shift_code already exists
+        cursor.execute('SELECT COUNT(*) FROM shifts WHERE shift_code = ?', (shift_code,))
+        count = cursor.fetchone()[0]
+        if count > 0:
+            conn.close()
+            return {'error': 'Shift Code already exists. Please choose a unique code.'}, 400
+
+        try:
+            cursor.execute('''
+                INSERT INTO shifts (shift_name, shift_code, duration, type, shift_timing)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (shift_name, shift_code, duration, shift_type, shift_timing))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return {'error': 'Shift Code already exists. Please choose a unique code.'}, 400
+
+        conn.close()
+        return {'success': True}
 
     return render_template('add_shift.html')
 
@@ -402,6 +404,78 @@ def remove_employee(emp_id):
     conn.close()
 
     return redirect(url_for('employee_details'))
+
+
+@app.route('/shift_details')
+def shift_details():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM shifts')
+    shifts = cursor.fetchall()
+    conn.close()
+
+    return render_template('shift_details.html', shifts=shifts)
+
+
+@app.route('/edit_shift_details/<shift_id>', methods=['GET', 'POST'])
+def edit_shift_details(shift_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        shift_name = request.form['shift_name']
+        shift_code = request.form['shift_code']
+        duration = int(request.form['duration'])
+        shift_type = request.form['type']
+        shift_timing = request.form['shift_timing']
+
+        # Check if the new shift_code already exists (excluding the current shift)
+        cursor.execute('SELECT COUNT(*) FROM shifts WHERE shift_code = ? AND id != ?',
+                       (shift_code, shift_id))
+        count = cursor.fetchone()[0]
+        if count > 0:
+            conn.close()
+            return {'error': 'Shift Code already exists. Please choose a unique code.'}, 400
+
+        try:
+            cursor.execute('''
+                UPDATE shifts 
+                SET shift_name = ?, shift_code = ?, duration = ?, type = ?, shift_timing = ?
+                WHERE id = ?
+            ''', (shift_name, shift_code, duration, shift_type, shift_timing, shift_id))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return {'error': 'Shift Code already exists. Please choose a unique code.'}, 400
+
+        conn.close()
+        return {'success': True}
+
+    cursor.execute('SELECT * FROM shifts WHERE id = ?', (shift_id,))
+    shift = cursor.fetchone()
+    conn.close()
+
+    return render_template('edit_shift_details.html', shift=shift)
+
+
+@app.route('/remove_shift/<shift_id>')
+def remove_shift(shift_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM shifts WHERE id = ?', (shift_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('shift_details'))
 
 if __name__ == '__main__':
     #app.run(debug=True)

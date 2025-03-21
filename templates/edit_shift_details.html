@@ -1,0 +1,54 @@
+<!-- templates/edit_shift_details.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Shift</h2>
+<form method="POST" action="{{ url_for('edit_shift_details', shift_id=shift[0]) }}" id="edit-shift-form">
+    <div class="form-group">
+        <label>Shift Name:</label>
+        <input type="text" name="shift_name" value="{{ shift[1] }}" required>
+    </div>
+    <div class="form-group">
+        <label>Shift Code:</label>
+        <input type="text" name="shift_code" value="{{ shift[2] }}" required>
+    </div>
+    <div class="form-group">
+        <label>Duration (hours):</label>
+        <input type="number" name="duration" value="{{ shift[3] }}" required>
+    </div>
+    <div class="form-group">
+        <label>Type:</label>
+        <select name="type" required>
+            <option value="full" {% if shift[4] == 'full' %}selected{% endif %}>Full Day</option>
+            <option value="half" {% if shift[4] == 'half' %}selected{% endif %}>Half Day</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Shift Timing:</label>
+        <input type="text" name="shift_timing" value="{{ shift[5] }}" required>
+    </div>
+    <button type="submit">Update Shift</button>
+</form>
+
+<script>
+document.querySelector('#edit-shift-form').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const formData = new FormData(this);
+    const response = await fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+
+    const result = await response.json();
+    if (result.error) {
+        window.alert(result.error); // Show error message in alert
+    } else if (result.success) {
+        window.location.href = "{{ url_for('shift_details') }}"; // Redirect on success
+    }
+});
+</script>
+{% endblock %}
