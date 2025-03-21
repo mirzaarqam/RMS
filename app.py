@@ -28,7 +28,8 @@ def init_db():
             shift_name TEXT,
             shift_code TEXT,
             duration INTEGER,
-            type TEXT CHECK(type IN ('full', 'half'))
+            type TEXT CHECK(type IN ('full', 'half')),
+            shift_timing TEXT
         )
     ''')
 
@@ -103,16 +104,31 @@ def add_shift():
         duration = int(request.form['duration'])
         shift_name = request.form['shift_name']
         shift_code = request.form['shift_code']
+        shift_start = request.form['shift_start']
+        shift_end = request.form['shift_end']
+
+        # Validate that the duration matches the selected start and end times
+        start_hour = int(shift_start.split(':')[0])
+        end_hour = int(shift_end.split(':')[0])
+        actual_duration = (end_hour - start_hour) % 24
+
+        if actual_duration != duration:
+            return "Shift duration does not match the selected start and end times."
+
+        # Format shift timing
+        shift_timing = f"{shift_start} - {shift_end}"
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO shifts (shift_name, shift_code, duration, type)
-            VALUES (?, ?, ?, ?)
-        ''', (shift_name, shift_code, duration, shift_type))
+            INSERT INTO shifts (shift_name, shift_code, duration, type, shift_timing)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (shift_name, shift_code, duration, shift_type, shift_timing))
         conn.commit()
         conn.close()
+
         return redirect(url_for('dashboard'))
+
     return render_template('add_shift.html')
 
 
@@ -199,6 +215,7 @@ def create_roster():
                            full_day_shifts=full_day_shifts,
                            half_day_shifts=half_day_shifts)
 
+
 @app.route('/roster_view')
 def roster_view():
     if not session.get('logged_in'):
@@ -211,14 +228,14 @@ def roster_view():
     cursor.execute('SELECT DISTINCT date FROM roster ORDER BY date')
     dates = [row[0] for row in cursor.fetchall()]
 
-    # Get all employees
-    cursor.execute('SELECT emp_id FROM employees')
-    employees = [row[0] for row in cursor.fetchall()]
+    # Get all employees with their names and IDs
+    cursor.execute('SELECT emp_id, name FROM employees')
+    employees = cursor.fetchall()  # List of tuples: [(emp_id, name), ...]
 
     # Create roster matrix
     roster = []
-    for emp_id in employees:
-        row = [emp_id]
+    for emp_id, emp_name in employees:
+        row = [emp_id, emp_name]  # Separate columns for ID and Name
         for date in dates:
             cursor.execute('''
                 SELECT shift || ' (' || status || ')' 

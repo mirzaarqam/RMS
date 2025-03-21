@@ -12,6 +12,7 @@
     <thead>
         <tr>
             <th>Employee ID</th>
+            <th>Employee Name</th>
             {% for date in dates %}
                 <th>{{ date }}</th>
             {% endfor %}
@@ -20,8 +21,9 @@
     <tbody>
         {% for row in roster %}
             <tr>
-                <td>{{ row[0] }}</td>
-                {% for cell in row[1:] %}
+                <td>{{ row[1] }}</td> <!-- Employee ID -->
+                <td>{{ row[0] }}</td> <!-- Employee Name -->
+                {% for cell in row[2:] %} <!-- Skip first two columns (ID and Name) -->
                     <td class="{{ 'off-day' if 'OFF' in cell else 'half-day' if 'Half' in cell else '' }}">
                         {{ cell }}
                         <a href="{{ url_for('edit_shift', emp_id=row[0], date=dates[loop.index0]) }}"
