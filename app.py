@@ -87,11 +87,27 @@ def add_employee():
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO employees (emp_id, name) VALUES (?, ?)', (emp_id, name))
-        conn.commit()
+
+        try:
+            cursor.execute('INSERT INTO employees (emp_id, name) VALUES (?, ?)', (emp_id, name))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return {'error': 'Employee ID already exists. Please choose a unique ID.'}, 400  # Return JSON with error
+
         conn.close()
-        return redirect(url_for('dashboard'))
+        return {'success': True}  # Return success response as JSON
+
     return render_template('add_employee.html')
+
+@app.route('/check_emp_id/<emp_id>')
+def check_emp_id(emp_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM employees WHERE emp_id = ?', (emp_id,))
+    count = cursor.fetchone()[0]
+    conn.close()
+    return {'exists': count > 0}
 
 
 @app.route('/add_shift', methods=['GET', 'POST'])
@@ -316,6 +332,76 @@ def edit_shift(emp_id, date):
                            date=date,
                            current_data=current_data,
                            shifts=shifts)
+
+
+@app.route('/employee_details')
+def employee_details():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT emp_id, name FROM employees')
+    employees = cursor.fetchall()
+    conn.close()
+
+    return render_template('employee_details.html', employees=employees)
+
+
+@app.route('/edit_employee/<emp_id>', methods=['GET', 'POST'])
+def edit_employee(emp_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        new_emp_id = request.form['emp_id']
+        new_name = request.form['name']
+
+        # Check if the new emp_id already exists (excluding the current employee)
+        cursor.execute('SELECT COUNT(*) FROM employees WHERE emp_id = ? AND emp_id != ?',
+                       (new_emp_id, emp_id))
+        count = cursor.fetchone()[0]
+        if count > 0:
+            conn.close()
+            return {'error': 'Employee ID already exists. Please choose a unique ID.'}, 400
+
+        try:
+            # Update the employee record
+            cursor.execute('UPDATE employees SET emp_id = ?, name = ? WHERE emp_id = ?',
+                           (new_emp_id, new_name, emp_id))
+
+            # Update all related records in the roster table
+            cursor.execute('UPDATE roster SET emp_id = ? WHERE emp_id = ?', (new_emp_id, emp_id))
+
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return {'error': 'Employee ID already exists. Please choose a unique ID.'}, 400
+
+        conn.close()
+        return {'success': True}
+
+    cursor.execute('SELECT name FROM employees WHERE emp_id = ?', (emp_id,))
+    employee = cursor.fetchone()
+    conn.close()
+
+    return render_template('edit_employee.html', emp_id=emp_id, employee_name=employee[0])
+
+@app.route('/remove_employee/<emp_id>')
+def remove_employee(emp_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM employees WHERE emp_id = ?', (emp_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('employee_details'))
 
 if __name__ == '__main__':
     #app.run(debug=True)
