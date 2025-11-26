@@ -1,0 +1,174 @@
+.roster-container {
+  overflow-x: auto;
+  margin-top: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 800px;
+}
+
+.roster-table thead {
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+}
+
+.roster-table th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #1557b0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+}
+
+.roster-table .sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+}
+
+.roster-table .sticky-col-2 {
+  position: sticky;
+  left: 120px;
+  z-index: 20;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+}
+
+.roster-table tbody .sticky-col,
+.roster-table tbody .sticky-col-2 {
+  background: white;
+  font-weight: 600;
+  color: #2c3e50;
+  border-right: 2px solid #dee2e6;
+}
+
+.roster-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.roster-table tbody tr:hover td {
+  background: #f8f9fa;
+}
+
+.roster-table tbody tr:hover .sticky-col,
+.roster-table tbody tr:hover .sticky-col-2 {
+  background: #f8f9fa;
+}
+
+.roster-cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.shift-info {
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 13px;
+}
+
+.edit-cell-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(26, 115, 232, 0.9);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.roster-table tbody tr:hover .edit-cell-btn {
+  opacity: 1;
+}
+
+.edit-cell-btn:hover {
+  background: #1557b0;
+  transform: scale(1.1);
+}
+
+.edit-cell-btn:active {
+  transform: scale(0.95);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.roster-cell-full {
+  background: #d4edda;
+}
+
+.roster-cell-full .status-badge {
+  background: #28a745;
+  color: white;
+}
+
+.roster-cell-half {
+  background: #fff3cd;
+}
+
+.roster-cell-half .status-badge {
+  background: #ffc107;
+  color: #000;
+}
+
+.roster-cell-off {
+  background: #f8d7da;
+}
+
+.roster-cell-off .status-badge {
+  background: #dc3545;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .roster-table th,
+  .roster-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .roster-table .sticky-col-2 {
+    left: 100px;
+  }
+
+  .shift-info {
+    font-size: 12px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
