@@ -389,13 +389,12 @@ def get_roster():
                     'status': ''
                 })
         
-        # Only include employees who have roster entries for selected dates
-        if any(shift['shift'] for shift in shifts):
-            roster_data.append({
-                'emp_id': emp_id,
-                'name': emp_name,
-                'shifts': shifts
-            })
+        # Include all employees, even without roster entries
+        roster_data.append({
+            'emp_id': emp_id,
+            'name': emp_name,
+            'shifts': shifts
+        })
 
     conn.close()
     return jsonify({
@@ -507,24 +506,71 @@ def get_roster_entry(emp_id, date):
 @app.route('/api/roster/export', methods=['GET'])
 @require_auth
 def export_roster():
+    month_filter = request.args.get('month')  # Format: YYYY-MM
+    show_all = request.args.get('all') == 'true'
+    
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT e.name, r.emp_id, r.date, r.shift, r.status 
-        FROM roster r
-        JOIN employees e ON r.emp_id = e.emp_id
-        ORDER BY e.name, r.date
-    ''')
-    rows = cursor.fetchall()
-    conn.close()
-
+    
+    # Get dates based on filter (same logic as get_roster)
+    if show_all:
+        cursor.execute('SELECT DISTINCT date FROM roster ORDER BY date DESC')
+    elif month_filter:
+        cursor.execute('''
+            SELECT DISTINCT date FROM roster 
+            WHERE date LIKE ? 
+            ORDER BY date
+        ''', (f"{month_filter}%",))
+    else:
+        # Default: show last month's roster
+        cursor.execute('''
+            SELECT DISTINCT date FROM roster 
+            WHERE strftime('%Y-%m', date) = (
+                SELECT strftime('%Y-%m', MAX(date)) FROM roster
+            )
+            ORDER BY date
+        ''')
+    
+    dates = [row['date'] for row in cursor.fetchall()]
+    
+    # Get all employees
+    cursor.execute('SELECT emp_id, name FROM employees ORDER BY name')
+    employees = cursor.fetchall()
+    
     filename = 'roster_export.csv'
     with open(filename, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Employee Name', 'Employee ID', 'Date', 'Shift', 'Status'])
-        for row in rows:
-            writer.writerow([row['name'], row['emp_id'], row['date'], row['shift'], row['status']])
-
+        
+        # Export data for all employees and all dates in filter
+        for employee in employees:
+            for date in dates:
+                cursor.execute('''
+                    SELECT shift, status 
+                    FROM roster 
+                    WHERE emp_id = ? AND date = ?
+                ''', (employee['emp_id'], date))
+                result = cursor.fetchone()
+                
+                if result:
+                    writer.writerow([
+                        employee['name'], 
+                        employee['emp_id'], 
+                        date, 
+                        result['shift'], 
+                        result['status']
+                    ])
+                else:
+                    # Include empty entries for employees without roster
+                    writer.writerow([
+                        employee['name'], 
+                        employee['emp_id'], 
+                        date, 
+                        '-', 
+                        'Not Assigned'
+                    ])
+    
+    conn.close()
     return send_file(filename, as_attachment=True, download_name='roster_export.csv')
 
 # ==================== STATS ENDPOINT ====================

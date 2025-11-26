@@ -152,6 +152,20 @@
   color: white;
 }
 
+.roster-cell-empty {
+  background: #f8f9fa;
+}
+
+.roster-cell-empty .status-badge {
+  background: #e0e6ed;
+  color: #6c757d;
+}
+
+.badge-secondary {
+  background: #e0e6ed;
+  color: #6c757d;
+}
+
 @media (max-width: 768px) {
   .roster-table th,
   .roster-table td {

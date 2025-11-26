@@ -67,7 +67,7 @@ export const rosterAPI = {
   create: (data) => api.post('/roster', data),
   update: (empId, date, data) => api.put(`/roster/${empId}/${date}`, data),
   getEntry: (empId, date) => api.get(`/roster/${empId}/${date}`),
-  export: () => api.get('/roster/export', { responseType: 'blob' }),
+  export: (params = {}) => api.get('/roster/export', { params, responseType: 'blob' }),
 };
 
 // Stats API

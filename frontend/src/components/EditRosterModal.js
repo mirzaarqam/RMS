@@ -18,7 +18,7 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
       // Parse current shift and status
       setFormData({
         shift: currentShift || '',
-        status: currentStatus || 'Full Day'
+        status: currentStatus || ''
       });
     }
   }, [isOpen, currentShift, currentStatus]);
@@ -74,7 +74,9 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Edit Roster Entry</h3>
+          <h3 className="modal-title">
+            {currentShift ? 'Edit Roster Entry' : 'Assign Roster Entry'}
+          </h3>
           <button className="modal-close" onClick={onClose}>
             <FiX />
           </button>

@@ -50,11 +50,27 @@ const RosterView = () => {
 
   const handleExport = async () => {
     try {
-      const response = await rosterAPI.export();
+      // Pass the current filter parameters to export
+      const params = {};
+      if (showAllMonths) {
+        params.all = 'true';
+      } else if (selectedMonth) {
+        params.month = selectedMonth;
+      }
+      
+      const response = await rosterAPI.export(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'roster_export.csv');
+      
+      // Create filename with current filter info
+      const monthName = selectedMonth 
+        ? new Date(selectedMonth + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+        : showAllMonths 
+          ? 'All_Months' 
+          : 'Last_Month';
+      link.setAttribute('download', `roster_export_${monthName.replace(/\s/g, '_')}.csv`);
+      
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -210,30 +226,32 @@ const RosterView = () => {
                       <td className="sticky-col">{employee.emp_id}</td>
                       <td className="sticky-col-2">{employee.name}</td>
                       {employee.shifts.map((shift, index) => (
-                        <td key={index} className={getCellClass(shift.status)}>
+                        <td key={index} className={shift.status ? getCellClass(shift.status) : 'roster-cell-empty'}>
                           <div className="roster-cell-content">
                             <div className="shift-info">
                               {shift.shift && shift.shift !== '' ? shift.shift : '-'}
                             </div>
-                            {shift.status && (
+                            {shift.status ? (
                               <div className={`status-badge ${getCellClass(shift.status)}`}>
                                 {shift.status}
                               </div>
+                            ) : (
+                              <div className="status-badge badge-secondary">
+                                Not Assigned
+                              </div>
                             )}
-                            {shift.shift && (
-                              <button
-                                className="edit-cell-btn"
-                                onClick={() => handleEditClick(
-                                  employee,
-                                  shift.date,
-                                  shift.shift,
-                                  shift.status
-                                )}
-                                title="Edit roster entry"
-                              >
-                                <FiEdit2 />
-                              </button>
-                            )}
+                            <button
+                              className="edit-cell-btn"
+                              onClick={() => handleEditClick(
+                                employee,
+                                shift.date,
+                                shift.shift || '',
+                                shift.status || ''
+                              )}
+                              title={shift.shift ? "Edit roster entry" : "Assign roster"}
+                            >
+                              <FiEdit2 />
+                            </button>
                           </div>
                         </td>
                       ))}
