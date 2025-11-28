@@ -1,35 +1,252 @@
 Employee Name,Employee ID,Date,Shift,Status
-Khurram Shahzad,547-2019-5159,2025-10-01,Special (1002),Half Day
-Khurram Shahzad,547-2019-5159,2025-10-02,Special (1002),Half Day
-Khurram Shahzad,547-2019-5159,2025-10-03,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-04,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-05,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-06,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-07,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-08,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-09,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-10,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-11,Night (3),OFF
-Khurram Shahzad,547-2019-5159,2025-10-12,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-13,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-14,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-15,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-16,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-17,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-18,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-19,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-20,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-21,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-22,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-23,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-24,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-25,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-26,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-27,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-28,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-29,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-30,Night (3),Full Day
-Khurram Shahzad,547-2019-5159,2025-10-31,Night (3),Full Day
+Afshan Haq,547-2016-6322,2025-12-01,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-02,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-03,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-04,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-05,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-06,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-07,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-08,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-09,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-10,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-11,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-12,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-13,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-14,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-15,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-16,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-17,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-18,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-19,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-20,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-21,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-22,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-23,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-24,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-25,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-26,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-27,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-28,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-29,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-30,-,Not Assigned
+Afshan Haq,547-2016-6322,2025-12-31,-,Not Assigned
+Bilal Butt,547-2025-5278,2025-12-01,N/A,OFF
+Bilal Butt,547-2025-5278,2025-12-02,N/A,OFF
+Bilal Butt,547-2025-5278,2025-12-03,N/A,OFF
+Bilal Butt,547-2025-5278,2025-12-04,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-05,N/A,OFF
+Bilal Butt,547-2025-5278,2025-12-06,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-07,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-08,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-09,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-10,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-11,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-12,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-13,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-14,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-15,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-16,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-17,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-18,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-19,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-20,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-21,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-22,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-23,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-24,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-25,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-26,Special (1002),Half Day
+Bilal Butt,547-2025-5278,2025-12-27,Special (1002),Half Day
+Bilal Butt,547-2025-5278,2025-12-28,Special (1002),Half Day
+Bilal Butt,547-2025-5278,2025-12-29,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-30,General (4),Full Day
+Bilal Butt,547-2025-5278,2025-12-31,General (4),Full Day
+Khurram Shahzad,547-2019-5159,2025-12-01,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-02,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-03,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-04,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-05,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-06,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-07,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-08,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-09,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-10,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-11,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-12,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-13,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-14,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-15,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-16,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-17,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-18,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-19,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-20,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-21,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-22,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-23,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-24,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-25,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-26,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-27,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-28,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-29,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-30,-,Not Assigned
+Khurram Shahzad,547-2019-5159,2025-12-31,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-01,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-02,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-03,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-04,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-05,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-06,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-07,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-08,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-09,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-10,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-11,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-12,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-13,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-14,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-15,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-16,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-17,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-18,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-19,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-20,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-21,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-22,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-23,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-24,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-25,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-26,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-27,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-28,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-29,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-30,-,Not Assigned
+Muhammad Afnan,547-2019-6818,2025-12-31,-,Not Assigned
+Saqlain Jutt,547-2016-6083,2025-12-01,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-02,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-03,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-04,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-05,N/A,OFF
+Saqlain Jutt,547-2016-6083,2025-12-06,Special (1002),Half Day
+Saqlain Jutt,547-2016-6083,2025-12-07,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-08,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-09,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-10,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-11,N/A,OFF
+Saqlain Jutt,547-2016-6083,2025-12-12,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-13,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-14,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-15,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-16,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-17,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-18,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-19,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-20,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-21,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-22,N/A,OFF
+Saqlain Jutt,547-2016-6083,2025-12-23,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-24,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-25,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-26,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-27,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-28,Evening (2),Full Day
+Saqlain Jutt,547-2016-6083,2025-12-29,Special (1002),Half Day
+Saqlain Jutt,547-2016-6083,2025-12-30,Special (1002),Half Day
+Saqlain Jutt,547-2016-6083,2025-12-31,Evening (2),Full Day
+Shawal Ali,547-2023-5244,2025-12-01,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-02,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-03,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-04,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-05,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-06,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-07,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-08,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-09,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-10,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-11,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-12,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-13,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-14,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-15,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-16,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-17,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-18,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-19,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-20,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-21,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-22,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-23,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-24,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-25,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-26,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-27,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-28,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-29,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-30,-,Not Assigned
+Shawal Ali,547-2023-5244,2025-12-31,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-01,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-02,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-03,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-04,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-05,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-06,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-07,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-08,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-09,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-10,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-11,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-12,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-13,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-14,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-15,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-16,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-17,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-18,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-19,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-20,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-21,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-22,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-23,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-24,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-25,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-26,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-27,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-28,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-29,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-30,-,Not Assigned
+Talha Tariq,547-2025-5281,2025-12-31,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-01,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-02,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-03,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-04,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-05,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-06,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-07,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-08,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-09,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-10,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-11,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-12,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-13,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-14,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-15,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-16,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-17,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-18,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-19,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-20,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-21,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-22,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-23,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-24,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-25,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-26,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-27,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-28,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-29,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-30,-,Not Assigned
+Tasbeeha Waris,547-2018-6640,2025-12-31,-,Not Assigned
 Wali Muhammad,547-2023-5233,2025-12-01,N/A,OFF
 Wali Muhammad,547-2023-5233,2025-12-02,General (4),Full Day
 Wali Muhammad,547-2023-5233,2025-12-03,General (4),Full Day
