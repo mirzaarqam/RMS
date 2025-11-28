@@ -16,6 +16,7 @@ const CreateRoster = () => {
   const [offDates, setOffDates] = useState([]);
   const [halfDates, setHalfDates] = useState([]);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
@@ -77,9 +78,20 @@ const CreateRoster = () => {
     setHalfDates(updated);
   };
 
+  const resetForm = () => {
+    setFormData({
+      emp_id: '',
+      month: '',
+      shift_id: '',
+    });
+    setOffDates([]);
+    setHalfDates([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setSaving(true);
 
     const payload = {
@@ -97,7 +109,13 @@ const CreateRoster = () => {
 
     try {
       await rosterAPI.create(payload);
-      navigate('/roster/view');
+      setSuccess('Roster Saved');
+      resetForm();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+      }, 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create roster');
     } finally {
@@ -127,6 +145,7 @@ const CreateRoster = () => {
           </div>
 
           {error && <div className="alert alert-error">{error}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-row">
