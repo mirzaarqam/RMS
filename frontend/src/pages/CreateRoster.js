@@ -255,7 +255,7 @@ const CreateRoster = () => {
                       <option value="">Select Half Shift</option>
                       {halfDayShifts.map((shift) => (
                         <option key={shift.id} value={shift.id}>
-                          {shift.shift_name} ({shift.shift_code})
+                          {shift.shift_name} ({shift.shift_code}) - {shift.shift_timing}
                         </option>
                       ))}
                     </select>

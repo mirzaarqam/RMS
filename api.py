@@ -327,7 +327,7 @@ def get_roster():
 
     # Get dates in roster based on filter
     if show_all:
-        cursor.execute('SELECT DISTINCT date FROM roster ORDER BY date DESC')
+        cursor.execute('SELECT DISTINCT date FROM roster ORDER BY date')
     elif month_filter:
         cursor.execute('''
             SELECT DISTINCT date FROM roster 
@@ -537,38 +537,86 @@ def export_roster():
     cursor.execute('SELECT emp_id, name FROM employees ORDER BY name')
     employees = cursor.fetchall()
     
+    # Build a mapping from display text to shift CODE for lookups
+    # Display format stored in roster is: "<shift_name> (<shift_code>)"
+    cursor.execute('SELECT id, shift_name, shift_code FROM shifts')
+    shift_rows = cursor.fetchall()
+    shift_display_to_code = {
+        f"{row['shift_name']} ({row['shift_code']})": row['shift_code'] for row in shift_rows
+    }
+
     filename = 'roster_export.csv'
     with open(filename, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(['Employee Name', 'Employee ID', 'Date', 'Shift', 'Status'])
+        # Required columns:
+        # 1: Emp ID
+        # 2: Date (YYYY-MM-DD)
+        # 3: Shift Code
+        # 4: Is/OFF (1 if OFF else 0)
+        writer.writerow(['Emp ID', 'Date', 'Shift Code', 'Is/OFF'])
         
         # Export data for all employees and all dates in filter
-        for employee in employees:
-            for date in dates:
+        if not dates:
+            pass
+        else:
+            # Ensure ascending order and compute context start
+            dates_sorted = sorted(dates)
+            min_date = dates_sorted[0]
+
+            for employee in employees:
+                # Initialize last full-day shift code with history before range
                 cursor.execute('''
-                    SELECT shift, status 
-                    FROM roster 
-                    WHERE emp_id = ? AND date = ?
-                ''', (employee['emp_id'], date))
-                result = cursor.fetchone()
-                
-                if result:
-                    writer.writerow([
-                        employee['name'], 
-                        employee['emp_id'], 
-                        date, 
-                        result['shift'], 
-                        result['status']
-                    ])
-                else:
-                    # Include empty entries for employees without roster
-                    writer.writerow([
-                        employee['name'], 
-                        employee['emp_id'], 
-                        date, 
-                        '-', 
-                        'Not Assigned'
-                    ])
+                    SELECT shift FROM roster 
+                    WHERE emp_id = ? AND date < ? AND status = 'Full Day'
+                    ORDER BY date DESC LIMIT 1
+                ''', (employee['emp_id'], min_date))
+                prev_full = cursor.fetchone()
+                last_full_shift_code = ''
+                if prev_full and prev_full['shift']:
+                    last_full_shift_code = shift_display_to_code.get(prev_full['shift'], '')
+
+                for date in dates_sorted:
+                    cursor.execute('''
+                        SELECT shift, status 
+                        FROM roster 
+                        WHERE emp_id = ? AND date = ?
+                    ''', (employee['emp_id'], date))
+                    result = cursor.fetchone()
+                    
+                    emp_id_val = employee['emp_id']
+                    date_val = date
+
+                    if result:
+                        status = (result['status'] or '').upper()
+                        shift_text = result['shift'] or ''
+
+                        if status == 'FULL DAY':
+                            shift_code_val = shift_display_to_code.get(shift_text, '')
+                            # Update last full-day shift code tracker
+                            last_full_shift_code = shift_code_val or last_full_shift_code
+                            is_off = 0
+                        elif status == 'OFF':
+                            shift_code_val = last_full_shift_code
+                            is_off = 1
+                        else:
+                            # Half Day or other statuses
+                            shift_code_val = shift_display_to_code.get(shift_text, '')
+                            is_off = 0
+
+                        writer.writerow([
+                            emp_id_val,
+                            date_val,
+                            shift_code_val,
+                            is_off
+                        ])
+                    else:
+                        # No roster entry: shift code blank, not off
+                        writer.writerow([
+                            emp_id_val,
+                            date_val,
+                            '',
+                            0
+                        ])
     
     conn.close()
     return send_file(filename, as_attachment=True, download_name='roster_export.csv')
