@@ -1,0 +1,16 @@
+[Unit]
+Description=RMS Backend API Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/rms
+Environment="PATH=/var/www/rms/venv/bin"
+ExecStart=/var/www/rms/venv/bin/gunicorn --workers 4 --bind 127.0.0.1:5000 --timeout 120 --access-logfile /var/log/rms/access.log --error-logfile /var/log/rms/error.log api:app
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
