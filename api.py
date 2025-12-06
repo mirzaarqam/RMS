@@ -5,13 +5,72 @@ from datetime import datetime, timedelta
 import csv
 import os
 from functools import wraps
+import json
 
 app = Flask(__name__)
-CORS(app)
-app.secret_key = 'your_secret_key'
+CORS(app, supports_credentials=True)
+app.secret_key = 'your_secret_key_change_in_production'
 
-# Session store (in production, use Redis or similar)
-sessions = {}
+# Session store using SQLite for persistence
+def init_sessions_db():
+    """Initialize sessions table"""
+    try:
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                username TEXT,
+                created_at TEXT,
+                last_accessed TEXT
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error initializing sessions table: {e}")
+
+def add_session(token, username):
+    """Add session to database"""
+    try:
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+        cursor.execute('''
+            INSERT OR REPLACE INTO sessions (token, username, created_at, last_accessed)
+            VALUES (?, ?, ?, ?)
+        ''', (token, username, now, now))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding session: {e}")
+
+def get_session(token):
+    """Get session from database"""
+    try:
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT username FROM sessions WHERE token = ?', (token,))
+        result = cursor.fetchone()
+        conn.close()
+        return result
+    except Exception as e:
+        print(f"Error getting session: {e}")
+        return None
+
+def delete_session(token):
+    """Delete session from database"""
+    try:
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM sessions WHERE token = ?', (token,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error deleting session: {e}")
+
+# Initialize sessions table
+init_sessions_db()
 
 # Initialize SQLite database
 def init_db():
@@ -57,8 +116,13 @@ def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = request.headers.get('Authorization')
-        if not token or token not in sessions:
-            return jsonify({'error': 'Unauthorized'}), 401
+        if not token:
+            return jsonify({'error': 'Unauthorized - No token'}), 401
+        
+        session = get_session(token)
+        if not session:
+            return jsonify({'error': 'Unauthorized - Invalid token'}), 401
+        
         return f(*args, **kwargs)
     return decorated_function
 
@@ -78,7 +142,7 @@ def login():
 
     if username == 'admin' and password == 'password':
         token = f"token_{datetime.now().timestamp()}"
-        sessions[token] = {'username': username}
+        add_session(token, username)
         return jsonify({'token': token, 'username': username}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
@@ -87,8 +151,7 @@ def login():
 @require_auth
 def logout():
     token = request.headers.get('Authorization')
-    if token in sessions:
-        del sessions[token]
+    delete_session(token)
     return jsonify({'message': 'Logged out successfully'}), 200
 
 @app.route('/api/validate', methods=['GET'])
