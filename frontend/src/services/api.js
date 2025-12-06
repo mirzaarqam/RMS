@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use environment variable or detect API URL
+const getApiBaseUrl = () => {
+  // In production, use the same host as the frontend
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Default: use current host + port 5000 for API
+  // This works for both localhost and production servers
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  
+  // If accessing via port 8088 (nginx), use same host with port 5000
+  return `${protocol}//${hostname}:5000/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

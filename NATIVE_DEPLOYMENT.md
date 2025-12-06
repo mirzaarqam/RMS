@@ -44,13 +44,18 @@ Follow steps below for detailed control.
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install required packages
-sudo apt install -y python3 python3-pip python3-venv nginx nodejs npm git curl
+# Install basic packages
+sudo apt install -y python3 python3-pip python3-venv nginx git curl ca-certificates gnupg
+
+# Install Node.js 20.x LTS (Ubuntu default is 12.x - too old!)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
 
 # Verify installations
-python3 --version
-node --version
-nginx -v
+python3 --version    # Should be 3.10+
+node --version       # Should be v20.x
+npm --version        # Should be 10.x+
+nginx -v            # Should be 1.18+
 ```
 
 ### 2. Create Application Directory
