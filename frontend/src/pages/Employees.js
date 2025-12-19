@@ -1,21 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { employeeAPI } from '../services/api';
 import { FiPlus, FiEdit2, FiTrash2, FiUsers } from 'react-icons/fi';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 const Employees = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const teamIdParam = searchParams.get('team_id');
+  const teamId = user?.role === 'super_admin' ? teamIdParam : user?.team_id;
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!teamId && user?.role === 'super_admin') {
+      setLoading(false);
+      setError('Select a team from Dashboard to manage employees.');
+      return;
+    }
     fetchEmployees();
-  }, []);
+  }, [teamId, user]);
 
   const fetchEmployees = async () => {
     try {
-      const response = await employeeAPI.getAll();
+      const response = await employeeAPI.getAll(teamId);
       setEmployees(response.data);
       setError('');
     } catch (err) {
@@ -32,7 +42,7 @@ const Employees = () => {
     }
 
     try {
-      await employeeAPI.delete(empId);
+      await employeeAPI.delete(empId, teamId);
       setEmployees(employees.filter(emp => emp.emp_id !== empId));
     } catch (err) {
       alert('Failed to delete employee');
@@ -59,7 +69,7 @@ const Employees = () => {
               <FiUsers style={{ marginRight: '10px' }} />
               Employee Management
             </h2>
-            <Link to="/employees/add" className="btn btn-primary">
+            <Link to={`/employees/add${teamId ? `?team_id=${teamId}` : ''}`} className="btn btn-primary">
               <FiPlus /> Add Employee
             </Link>
           </div>
@@ -73,7 +83,7 @@ const Employees = () => {
               </div>
               <h3>No Employees Found</h3>
               <p>Start by adding your first employee</p>
-              <Link to="/employees/add" className="btn btn-primary">
+              <Link to={`/employees/add${teamId ? `?team_id=${teamId}` : ''}`} className="btn btn-primary">
                 <FiPlus /> Add Employee
               </Link>
             </div>
@@ -95,7 +105,7 @@ const Employees = () => {
                       <td>
                         <div className="table-actions">
                           <Link
-                            to={`/employees/edit/${employee.emp_id}`}
+                            to={`/employees/edit/${employee.emp_id}${teamId ? `?team_id=${teamId}` : ''}`}
                             className="btn btn-sm btn-outline"
                           >
                             <FiEdit2 /> Edit

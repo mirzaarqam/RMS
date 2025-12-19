@@ -1,0 +1,84 @@
+.month-calendar {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.calendar-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-weight: 600;
+  font-size: 9px;
+  color: #34495e;
+  padding: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  background: white;
+  color: #2c3e50;
+  transition: all 0.2s;
+  user-select: none;
+  min-height: 28px;
+}
+
+.calendar-day:not(.empty):hover {
+  background: #e3f2fd;
+  border-color: #1a73e8;
+  transform: scale(1.05);
+}
+
+.calendar-day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.calendar-day.selected {
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  border-color: #0d47a1;
+  font-weight: 600;
+}
+
+.calendar-day.selected:hover {
+  background: linear-gradient(135deg, #1557b0 0%, #0d47a1 100%);
+}

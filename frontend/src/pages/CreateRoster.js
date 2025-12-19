@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { employeeAPI, shiftAPI, rosterAPI } from '../services/api';
 import { FiSave, FiArrowLeft, FiX } from 'react-icons/fi';
 import Layout from '../components/Layout';
+import MonthCalendar from '../components/MonthCalendar';
+import { useAuth } from '../context/AuthContext';
 
 const CreateRoster = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const teamId = user?.role === 'super_admin' ? searchParams.get('team_id') : user?.team_id;
   const [employees, setEmployees] = useState([]);
   const [fullDayShifts, setFullDayShifts] = useState([]);
   const [halfDayShifts, setHalfDayShifts] = useState([]);
@@ -21,14 +26,55 @@ const CreateRoster = () => {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
+  const formatTiming = (timing) => {
+    if (!timing) return '';
+    const toAmPm = (t) => {
+      t = t.trim();
+      const ampm = t.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+      if (ampm) return `${ampm[1]}:${ampm[2]} ${ampm[3].toUpperCase()}`;
+      const plain = t.match(/^(\d{1,2}):(\d{2})$/);
+      if (plain) {
+        let h = parseInt(plain[1], 10);
+        const m = parseInt(plain[2], 10);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour12 = ((h + 11) % 12) + 1;
+        return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+      }
+      return t;
+    };
+    const parts = timing.split('-');
+    if (parts.length === 2) return `${toAmPm(parts[0])} - ${toAmPm(parts[1])}`;
+    return toAmPm(timing);
+  };
+
   useEffect(() => {
+    if (user?.role === 'super_admin' && !teamId) {
+      setError('Select a team from Dashboard to create roster.');
+      setLoading(false);
+      return;
+    }
     fetchInitialData();
-  }, []);
+  }, [teamId, user]);
+
+  useEffect(() => {
+    // Pre-fill form if coming from edit action
+    const empId = searchParams.get('emp_id');
+    const month = searchParams.get('month');
+    const shiftId = searchParams.get('shift_id');
+    
+    if (empId || month || shiftId) {
+      setFormData({
+        emp_id: empId || '',
+        month: month || '',
+        shift_id: shiftId || ''
+      });
+    }
+  }, [searchParams]);
 
   const fetchInitialData = async () => {
     try {
       const [empResponse, fullShiftsResponse, halfShiftsResponse] = await Promise.all([
-        employeeAPI.getAll(),
+        employeeAPI.getAll(teamId),
         shiftAPI.getAll('full'),
         shiftAPI.getAll('half')
       ]);
@@ -48,28 +94,6 @@ const CreateRoster = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const addOffDate = () => {
-    setOffDates([...offDates, '']);
-  };
-
-  const removeOffDate = (index) => {
-    setOffDates(offDates.filter((_, i) => i !== index));
-  };
-
-  const updateOffDate = (index, value) => {
-    const updated = [...offDates];
-    updated[index] = value;
-    setOffDates(updated);
-  };
-
-  const addHalfDate = () => {
-    setHalfDates([...halfDates, { date: '', shift_id: '' }]);
-  };
-
-  const removeHalfDate = (index) => {
-    setHalfDates(halfDates.filter((_, i) => i !== index));
   };
 
   const updateHalfDate = (index, field, value) => {
@@ -104,7 +128,8 @@ const CreateRoster = () => {
         .map(hd => ({
           date: hd.date,
           shift_id: parseInt(hd.shift_id)
-        }))
+        })),
+      team_id: teamId,
     };
 
     try {
@@ -139,7 +164,7 @@ const CreateRoster = () => {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title">Create Roster</h2>
-            <button onClick={() => navigate('/roster')} className="btn btn-secondary">
+            <button onClick={() => navigate(`/roster${teamId ? `?team_id=${teamId}` : ''}`)} className="btn btn-secondary">
               <FiArrowLeft /> Back
             </button>
           </div>
@@ -195,90 +220,140 @@ const CreateRoster = () => {
                 <option value="">Select Shift</option>
                 {fullDayShifts.map((shift) => (
                   <option key={shift.id} value={shift.id}>
-                    {shift.shift_name} ({shift.shift_code}) - {shift.shift_timing}
+                    {shift.shift_name} ({shift.shift_code}) - {formatTiming(shift.shift_timing)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">OFF Days</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {offDates.map((date, index) => (
-                  <div key={index} style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={date}
-                      onChange={(e) => updateOffDate(index, e.target.value)}
+              <label className="form-label">OFF Days & Half Days Selection</label>
+              {formData.month ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  {/* Half Days - Left Side */}
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#34495e', marginBottom: '8px', display: 'block' }}>
+                      Half Days Calendar
+                    </label>
+                    <MonthCalendar
+                      month={formData.month}
+                      selectedDates={halfDates.map(hd => hd.date)}
+                      onDateSelect={(dateStr) => {
+                        const exists = halfDates.find(hd => hd.date === dateStr);
+                        if (exists) {
+                          setHalfDates(halfDates.filter(hd => hd.date !== dateStr));
+                        } else {
+                          setHalfDates([...halfDates, { date: dateStr, shift_id: '' }]);
+                        }
+                      }}
                       disabled={saving}
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeOffDate(index)}
-                      className="btn btn-danger btn-sm"
-                      disabled={saving}
-                    >
-                      <FiX />
-                    </button>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addOffDate}
-                  className="btn btn-outline"
-                  disabled={saving}
-                >
-                  + Add OFF Date
-                </button>
-              </div>
+
+                  {/* OFF Days - Right Side */}
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#34495e', marginBottom: '8px', display: 'block' }}>
+                      OFF Days Calendar
+                    </label>
+                    <MonthCalendar
+                      month={formData.month}
+                      selectedDates={offDates}
+                      onDateSelect={(dateStr) => {
+                        if (offDates.includes(dateStr)) {
+                          setOffDates(offDates.filter(d => d !== dateStr));
+                        } else {
+                          setOffDates([...offDates, dateStr]);
+                        }
+                      }}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '12px', background: '#fff3cd', borderRadius: '6px', color: '#856404', fontSize: '13px' }}>
+                  Please select a month first to add OFF days and Half days
+                </div>
+              )}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Half Days</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {halfDates.map((hd, index) => (
-                  <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px' }}>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={hd.date}
-                      onChange={(e) => updateHalfDate(index, 'date', e.target.value)}
-                      disabled={saving}
-                    />
-                    <select
-                      className="form-control"
-                      value={hd.shift_id}
-                      onChange={(e) => updateHalfDate(index, 'shift_id', e.target.value)}
-                      disabled={saving}
-                    >
-                      <option value="">Select Half Shift</option>
-                      {halfDayShifts.map((shift) => (
-                        <option key={shift.id} value={shift.id}>
-                          {shift.shift_name} ({shift.shift_code}) - {shift.shift_timing}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => removeHalfDate(index)}
-                      className="btn btn-danger btn-sm"
-                      disabled={saving}
-                    >
-                      <FiX />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addHalfDate}
-                  className="btn btn-outline"
-                  disabled={saving}
-                >
-                  + Add Half Day
-                </button>
+            {/* Selected OFF Days Tags */}
+            {offDates.length > 0 && (
+              <div className="form-group">
+                <strong style={{ fontSize: '13px', color: '#34495e' }}>Selected OFF Days:</strong>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                  {offDates.map((date) => (
+                    <div key={date} style={{
+                      background: '#f8d7da',
+                      color: '#721c24',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <button
+                        type="button"
+                        onClick={() => setOffDates(offDates.filter(d => d !== date))}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0',
+                          color: '#721c24',
+                          fontSize: '16px'
+                        }}
+                        disabled={saving}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Half Day Shift Assignment */}
+            {halfDates.length > 0 && (
+              <div className="form-group">
+                <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '6px', border: '1px solid #dee2e6' }}>
+                  <strong style={{ fontSize: '13px', color: '#34495e', marginBottom: '12px', display: 'block' }}>
+                    Assign Shifts to Half Days:
+                  </strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {halfDates.map((hd, index) => (
+                          <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr auto', gap: '10px', alignItems: 'center' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: '#2c3e50' }}>
+                              {new Date(hd.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                            <select
+                              className="form-control"
+                              value={hd.shift_id}
+                              onChange={(e) => updateHalfDate(index, 'shift_id', e.target.value)}
+                              disabled={saving}
+                            >
+                              <option value="">Select Half Shift</option>
+                              {halfDayShifts.map((shift) => (
+                                <option key={shift.id} value={shift.id}>
+                                  {shift.shift_name} ({shift.shift_code}) - {formatTiming(shift.shift_timing)}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => setHalfDates(halfDates.filter((_, i) => i !== index))}
+                              className="btn btn-danger btn-sm"
+                              disabled={saving}
+                            >
+                              <FiX />
+                            </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button type="submit" className="btn btn-success" disabled={saving}>

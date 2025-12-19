@@ -3,7 +3,7 @@ import { shiftAPI, rosterAPI } from '../services/api';
 import { FiX, FiSave } from 'react-icons/fi';
 import './EditRosterModal.css';
 
-const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, currentStatus, onSave }) => {
+const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, currentStatus, onSave, teamId }) => {
   const [shifts, setShifts] = useState([]);
   const [formData, setFormData] = useState({
     shift: '',
@@ -38,7 +38,7 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
     setLoading(true);
 
     try {
-      await rosterAPI.update(employee.emp_id, date, formData);
+      await rosterAPI.update(employee.emp_id, date, { ...formData, team_id: teamId });
       onSave();
       onClose();
     } catch (err) {
@@ -46,6 +46,27 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatTiming = (timing) => {
+    if (!timing) return '';
+    const toAmPm = (t) => {
+      t = t.trim();
+      const ampm = t.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+      if (ampm) return `${ampm[1]}:${ampm[2]} ${ampm[3].toUpperCase()}`;
+      const plain = t.match(/^(\d{1,2}):(\d{2})$/);
+      if (plain) {
+        let h = parseInt(plain[1], 10);
+        const m = parseInt(plain[2], 10);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour12 = ((h + 11) % 12) + 1;
+        return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+      }
+      return t;
+    };
+    const parts = timing.split('-');
+    if (parts.length === 2) return `${toAmPm(parts[0])} - ${toAmPm(parts[1])}`;
+    return toAmPm(timing);
   };
 
   const handleShiftChange = (e) => {
@@ -58,7 +79,8 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
     } else if (selectedShiftId) {
       const selectedShift = shifts.find(s => s.id === parseInt(selectedShiftId));
       if (selectedShift) {
-        const shiftDisplay = `${selectedShift.shift_name} (${selectedShift.shift_code})`;
+        const timing = formatTiming(selectedShift.shift_timing);
+        const shiftDisplay = `${selectedShift.shift_name} (${selectedShift.shift_code})${timing ? ` - ${timing}` : ''}`;
         const status = selectedShift.type === 'half' ? 'Half Day' : 'Full Day';
         setFormData({
           shift: shiftDisplay,
@@ -113,14 +135,14 @@ const EditRosterModal = ({ isOpen, onClose, employee, date, currentShift, curren
                 <optgroup label="Full Day Shifts">
                   {shifts.filter(s => s.type === 'full').map((shift) => (
                     <option key={shift.id} value={shift.id}>
-                      {shift.shift_name} ({shift.shift_code}) - {shift.shift_timing}
+                      {shift.shift_name} ({shift.shift_code}) - {formatTiming(shift.shift_timing)}
                     </option>
                   ))}
                 </optgroup>
                 <optgroup label="Half Day Shifts">
                   {shifts.filter(s => s.type === 'half').map((shift) => (
                     <option key={shift.id} value={shift.id}>
-                      {shift.shift_name} ({shift.shift_code}) - {shift.shift_timing}
+                      {shift.shift_name} ({shift.shift_code}) - {formatTiming(shift.shift_timing)}
                     </option>
                   ))}
                 </optgroup>

@@ -8,6 +8,26 @@ const Shifts = () => {
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const formatTiming = (timing) => {
+    if (!timing) return '';
+    const toAmPm = (t) => {
+      t = t.trim();
+      const ampm = t.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+      if (ampm) return `${ampm[1]}:${ampm[2]} ${ampm[3].toUpperCase()}`;
+      const plain = t.match(/^(\d{1,2}):(\d{2})$/);
+      if (plain) {
+        let h = parseInt(plain[1], 10);
+        const m = parseInt(plain[2], 10);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour12 = ((h + 11) % 12) + 1;
+        return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+      }
+      return t; // fallback as-is
+    };
+    const parts = timing.split('-');
+    if (parts.length === 2) return `${toAmPm(parts[0])} - ${toAmPm(parts[1])}`;
+    return toAmPm(timing);
+  };
 
   useEffect(() => {
     fetchShifts();
@@ -103,7 +123,7 @@ const Shifts = () => {
                           {shift.type === 'full' ? 'Full Day' : 'Half Day'}
                         </span>
                       </td>
-                      <td>{shift.shift_timing}</td>
+                        <td>{formatTiming(shift.shift_timing)}</td>
                       <td>
                         <div className="table-actions">
                           <Link

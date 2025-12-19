@@ -58,14 +58,35 @@ export const authAPI = {
   validate: () => api.get('/validate'),
 };
 
+// Admin APIs
+export const teamsAPI = {
+  list: () => api.get('/teams'),
+  create: (data) => api.post('/teams', data),
+  update: (id, data) => api.put(`/teams/${id}`, data),
+  remove: (id) => api.delete(`/teams/${id}`),
+};
+
+export const usersAPI = {
+  list: () => api.get('/users'),
+  create: (data) => api.post('/users', data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  remove: (id) => api.delete(`/users/${id}`),
+  resetPassword: (username, password) => api.put(`/users/${username}/password`, { password }),
+};
+
+export const settingsAPI = {
+  get: () => api.get('/settings'),
+  set: (key, value) => api.put(`/settings/${key}`, { value }),
+};
+
 // Employee API
 export const employeeAPI = {
-  getAll: () => api.get('/employees'),
-  getById: (empId) => api.get(`/employees/${empId}`),
+  getAll: (teamId) => api.get('/employees', { params: teamId ? { team_id: teamId } : {} }),
+  getById: (empId, teamId) => api.get(`/employees/${empId}`, { params: teamId ? { team_id: teamId } : {} }),
   create: (data) => api.post('/employees', data),
   update: (empId, data) => api.put(`/employees/${empId}`, data),
-  delete: (empId) => api.delete(`/employees/${empId}`),
-  checkExists: (empId) => api.get(`/employees/check/${empId}`),
+  delete: (empId, teamId) => api.delete(`/employees/${empId}`, { params: teamId ? { team_id: teamId } : {} }),
+  checkExists: (empId, teamId) => api.get(`/employees/check/${empId}`, { params: teamId ? { team_id: teamId } : {} }),
 };
 
 // Shift API
@@ -82,13 +103,16 @@ export const rosterAPI = {
   get: (params = {}) => api.get('/roster', { params }),
   create: (data) => api.post('/roster', data),
   update: (empId, date, data) => api.put(`/roster/${empId}/${date}`, data),
-  getEntry: (empId, date) => api.get(`/roster/${empId}/${date}`),
+  getEntry: (empId, date, params = {}) => api.get(`/roster/${empId}/${date}`, { params }),
   export: (params = {}) => api.get('/roster/export', { params, responseType: 'blob' }),
+  deleteEmployeeRoster: (empId, month, teamId) => api.delete('/roster/employee', { 
+    params: { emp_id: empId, month: month, team_id: teamId } 
+  }),
 };
 
 // Stats API
 export const statsAPI = {
-  get: () => api.get('/stats'),
+  get: (params = {}) => api.get('/stats', { params }),
 };
 
 export default api;

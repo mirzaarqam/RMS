@@ -15,6 +15,7 @@ import EditShift from './pages/EditShift';
 import Roster from './pages/Roster';
 import CreateRoster from './pages/CreateRoster';
 import RosterView from './pages/RosterView';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -80,6 +81,12 @@ function App() {
           <Route path="/roster/view" element={
             <ProtectedRoute>
               <RosterView />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <Admin />
             </ProtectedRoute>
           } />
 

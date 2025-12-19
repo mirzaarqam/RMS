@@ -61,7 +61,7 @@ logs/
 # CSV exports (generated files)
 roster_export.csv
 *.csv
-.db
+# .db
 
 # Python virtual environment activation scripts
 Scripts/

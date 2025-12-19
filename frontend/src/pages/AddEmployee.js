@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { employeeAPI } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { employeeAPI, teamsAPI } from '../services/api';
 import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 const AddEmployee = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [teams, setTeams] = useState([]);
+  const teamIdFromParam = searchParams.get('team_id');
+  const defaultTeamId = user?.role === 'super_admin' ? teamIdFromParam || '' : user?.team_id || '';
   const [formData, setFormData] = useState({
     emp_id: '',
-    name: ''
+    name: '',
+    team_id: defaultTeamId,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'super_admin') {
+      teamsAPI.list().then(res => setTeams(res.data || [])).catch(()=>{});
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({
@@ -26,8 +39,17 @@ const AddEmployee = () => {
     setLoading(true);
 
     try {
-      await employeeAPI.create(formData);
-      navigate('/employees');
+      const payload = { ...formData };
+      if (user?.role !== 'super_admin') {
+        payload.team_id = user?.team_id;
+      }
+      if (!payload.team_id) {
+        setError('Team is required');
+        setLoading(false);
+        return;
+      }
+      await employeeAPI.create(payload);
+      navigate(`/employees${payload.team_id ? `?team_id=${payload.team_id}` : ''}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add employee');
     } finally {
@@ -41,7 +63,7 @@ const AddEmployee = () => {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title">Add New Employee</h2>
-            <button onClick={() => navigate('/employees')} className="btn btn-secondary">
+            <button onClick={() => navigate(`/employees${formData.team_id ? `?team_id=${formData.team_id}` : ''}`)} className="btn btn-secondary">
               <FiArrowLeft /> Back
             </button>
           </div>
@@ -76,6 +98,25 @@ const AddEmployee = () => {
                 disabled={loading}
               />
             </div>
+
+            {user?.role === 'super_admin' && (
+              <div className="form-group">
+                <label className="form-label">Team *</label>
+                <select
+                  name="team_id"
+                  className="form-control"
+                  value={formData.team_id}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                >
+                  <option value="">Select Team</option>
+                  {teams.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button type="submit" className="btn btn-success" disabled={loading}>

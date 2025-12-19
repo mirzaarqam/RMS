@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { rosterAPI } from '../services/api';
-import { FiPlus, FiDownload, FiCalendar, FiEdit2, FiList } from 'react-icons/fi';
+import { FiPlus, FiDownload, FiCalendar, FiEdit2, FiList, FiEye, FiTrash2 } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import EditRosterModal from '../components/EditRosterModal';
+import ViewRosterModal from '../components/ViewRosterModal';
 import './RosterView.css';
+import { useAuth } from '../context/AuthContext';
 
 const RosterView = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const teamId = user?.role === 'super_admin' ? searchParams.get('team_id') : user?.team_id;
   const [rosterData, setRosterData] = useState({ 
     dates: [], 
     roster: [], 
@@ -23,10 +29,20 @@ const RosterView = () => {
     currentShift: '',
     currentStatus: ''
   });
+  const [viewRosterModal, setViewRosterModal] = useState({
+    isOpen: false,
+    employee: null,
+    data: []
+  });
 
   useEffect(() => {
+    if (user?.role === 'super_admin' && !teamId) {
+      setLoading(false);
+      setError('Select a team from Dashboard to view roster.');
+      return;
+    }
     fetchRoster();
-  }, [selectedMonth, showAllMonths]);
+  }, [selectedMonth, showAllMonths, teamId, user]);
 
   const fetchRoster = async () => {
     try {
@@ -37,6 +53,7 @@ const RosterView = () => {
         params.month = selectedMonth;
       }
       
+      if (teamId) params.team_id = teamId;
       const response = await rosterAPI.get(params);
       setRosterData(response.data);
       setError('');
@@ -57,6 +74,7 @@ const RosterView = () => {
       } else if (selectedMonth) {
         params.month = selectedMonth;
       }
+      if (teamId) params.team_id = teamId;
       
       const response = await rosterAPI.export(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -106,6 +124,89 @@ const RosterView = () => {
     });
   };
 
+  const handleViewRoster = (employee) => {
+    // Flatten roster data for the modal
+    const flatData = [];
+    rosterData.roster.forEach((emp) => {
+      if (emp.emp_id === employee.emp_id) {
+        emp.shifts.forEach((shift) => {
+          flatData.push({
+            emp_id: emp.emp_id,
+            shift: shift.shift || '-',
+            date: shift.date,
+            status: shift.status || '-',
+            timing: shift.timing || ''
+          });
+        });
+      }
+    });
+    setViewRosterModal({
+      isOpen: true,
+      employee: employee,
+      data: flatData
+    });
+  };
+
+  const handleCloseViewModal = () => {
+    setViewRosterModal({
+      isOpen: false,
+      employee: null,
+      data: []
+    });
+  };
+
+  const handleDeleteEmployeeRoster = async (empId) => {
+    if (!window.confirm(`Delete roster for employee ${empId}?`)) {
+      return;
+    }
+    try {
+      const month = selectedMonth || new Date().toISOString().slice(0, 7);
+      await rosterAPI.deleteEmployeeRoster(empId, month, teamId);
+      fetchRoster();
+    } catch (err) {
+      alert('Failed to delete roster: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
+  const handleEditEmployeeRoster = (employee) => {
+    // Collect existing roster data for this employee
+    const month = selectedMonth || new Date().toISOString().slice(0, 7);
+    const empRosterData = rosterData.roster.find((emp) => emp.emp_id === employee.emp_id);
+
+    if (!empRosterData) {
+      alert('No roster data found for this employee');
+      return;
+    }
+
+    // Extract off dates and half dates from shifts
+    const offDates = [];
+    const halfDates = [];
+    let defaultShiftId = null;
+
+    empRosterData.shifts.forEach((shift) => {
+      if (shift.status === 'OFF') {
+        offDates.push(shift.date);
+      } else if (shift.status === 'Half Day') {
+        halfDates.push({
+          date: shift.date,
+          shift_id: shift.shift_id || ''
+        });
+      } else if (!defaultShiftId) {
+        defaultShiftId = shift.shift_id;
+      }
+    });
+
+    // Navigate to CreateRoster with pre-filled data
+    const params = new URLSearchParams({
+      emp_id: employee.emp_id,
+      month: month,
+      shift_id: defaultShiftId || '',
+      team_id: teamId,
+      edit: 'true'
+    });
+    navigate(`/roster/create?${params.toString()}`);
+  };
+
   const handleSaveSuccess = () => {
     fetchRoster(); // Refresh roster data
   };
@@ -143,7 +244,7 @@ const RosterView = () => {
               <button onClick={handleExport} className="btn btn-success">
                 <FiDownload /> Export CSV
               </button>
-              <Link to="/roster/create" className="btn btn-primary">
+              <Link to={`/roster/create${teamId ? `?team_id=${teamId}` : ''}`} className="btn btn-primary">
                 <FiPlus /> Create Roster
               </Link>
             </div>
@@ -177,14 +278,26 @@ const RosterView = () => {
                   </option>
                 ))}
               </select>
-              <button 
-                onClick={handleShowAllMonths}
-                className={`btn ${showAllMonths ? 'btn-primary' : 'btn-outline'}`}
-              >
-                <FiList /> Complete Roster History
-              </button>
-              {showAllMonths && (
-                <span className="badge badge-info">Showing All Months</span>
+              {!showAllMonths ? (
+                <button 
+                  onClick={handleShowAllMonths}
+                  className="btn btn-outline"
+                >
+                  <FiList /> Complete Roster History
+                </button>
+              ) : (
+                <>
+                  <span className="badge badge-info">Showing All Months</span>
+                  <button 
+                    onClick={() => {
+                      setShowAllMonths(false);
+                      setSelectedMonth('');
+                    }}
+                    className="btn btn-secondary"
+                  >
+                    Back to Current Month
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -209,6 +322,7 @@ const RosterView = () => {
                   <tr>
                     <th className="sticky-col" style={{ minWidth: '120px' }}>Employee ID</th>
                     <th className="sticky-col-2" style={{ minWidth: '150px' }}>Employee Name</th>
+                    <th className="sticky-col-actions" style={{ minWidth: '140px' }}>Actions</th>
                     {rosterData.dates.map((date) => (
                       <th key={date} style={{ minWidth: '200px' }}>
                         {new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -225,6 +339,38 @@ const RosterView = () => {
                     <tr key={employee.emp_id}>
                       <td className="sticky-col">{employee.emp_id}</td>
                       <td className="sticky-col-2">{employee.name}</td>
+                      <td className="sticky-col-actions">
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            className="btn btn-sm btn-outline"
+                            onClick={() => handleViewRoster(employee)}
+                            title="View roster"
+                            style={{ padding: '4px 6px' }}
+                          >
+                            <FiEye size={14} />
+                          </button>
+                          {!showAllMonths && (
+                            <>
+                              <button
+                                className="btn btn-sm btn-outline"
+                                onClick={() => handleEditEmployeeRoster(employee)}
+                                title="Edit roster"
+                                style={{ padding: '4px 6px' }}
+                              >
+                                <FiEdit2 size={14} />
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => handleDeleteEmployeeRoster(employee.emp_id)}
+                                title="Delete roster"
+                                style={{ padding: '4px 6px' }}
+                              >
+                                <FiTrash2 size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                       {employee.shifts.map((shift, index) => (
                         <td key={index} className={shift.status ? getCellClass(shift.status) : 'roster-cell-empty'}>
                           <div className="roster-cell-content">
@@ -307,6 +453,17 @@ const RosterView = () => {
           currentShift={editModal.currentShift}
           currentStatus={editModal.currentStatus}
           onSave={handleSaveSuccess}
+          teamId={teamId}
+        />
+
+        {/* View Roster Modal */}
+        <ViewRosterModal
+          isOpen={viewRosterModal.isOpen}
+          onClose={handleCloseViewModal}
+          employee={viewRosterModal.employee}
+          rosterData={viewRosterModal.data}
+          selectedMonth={selectedMonth}
+          showAllMonths={showAllMonths}
         />
       </div>
     </Layout>

@@ -1,9 +1,28 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FiCalendar, FiPlus, FiEye } from 'react-icons/fi';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 const Roster = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const teamId = user?.role === 'super_admin' ? searchParams.get('team_id') : user?.team_id;
+
+  if (user?.role === 'super_admin' && !teamId) {
+    return (
+      <Layout>
+        <div className="container">
+          <div className="card">
+            <div className="card-header"><h2 className="card-title">Roster Management</h2></div>
+            <div className="card-body">Select a team from Dashboard to manage roster.</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const teamQuery = teamId ? `?team_id=${teamId}` : '';
   return (
     <Layout>
       <div className="container">
@@ -21,7 +40,7 @@ const Roster = () => {
             gap: '20px',
             marginTop: '20px'
           }}>
-            <Link to="/roster/create" style={{ textDecoration: 'none' }}>
+            <Link to={`/roster/create${teamQuery}`} style={{ textDecoration: 'none' }}>
               <div className="card" style={{ 
                 height: '100%',
                 borderLeft: '4px solid #28a745',
@@ -58,7 +77,7 @@ const Roster = () => {
               </div>
             </Link>
 
-            <Link to="/roster/view" style={{ textDecoration: 'none' }}>
+            <Link to={`/roster/view${teamQuery}`} style={{ textDecoration: 'none' }}>
               <div className="card" style={{ 
                 height: '100%',
                 borderLeft: '4px solid #1a73e8',

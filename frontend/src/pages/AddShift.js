@@ -28,8 +28,14 @@ const AddShift = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    const shift_timing = `${formData.shift_start} - ${formData.shift_end}`;
+    const toAmPm = (t) => {
+      if (!t) return '';
+      const [h, m] = t.split(':').map(Number);
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hour12 = ((h + 11) % 12) + 1; // 0->12, 13->1
+      return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+    };
+    const shift_timing = `${toAmPm(formData.shift_start)} - ${toAmPm(formData.shift_end)}`;
     const payload = {
       shift_name: formData.shift_name,
       shift_code: formData.shift_code,

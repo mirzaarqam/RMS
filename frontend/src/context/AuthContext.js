@@ -11,8 +11,9 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       authAPI.validate()
-        .then(() => {
-          setUser({ token });
+        .then((res) => {
+          const info = res.data?.user || {};
+          setUser({ token, username: info.username, role: info.role, team_id: info.team_id });
         })
         .catch(() => {
           localStorage.removeItem('token');
@@ -28,10 +29,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await authAPI.login(username, password);
-      const { token, username: userName } = response.data;
+      const { token, username: userName, role, team_id } = response.data;
       localStorage.setItem('token', token);
-      setUser({ token, username: userName });
-      return { success: true };
+      setUser({ token, username: userName, role, team_id });
+      try { sessionStorage.setItem('rms_role', JSON.stringify(role)); } catch {}
+      return { success: true, role, team_id };
     } catch (error) {
       return { 
         success: false, 

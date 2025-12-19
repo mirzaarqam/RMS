@@ -20,7 +20,11 @@ const Login = () => {
     const result = await login(username, password);
     
     if (result.success) {
-      navigate('/dashboard');
+      if (result.role === 'super_admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
       setError(result.error);
     }

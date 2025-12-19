@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiUsers, FiClock, FiCalendar, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiHome, FiUsers, FiClock, FiCalendar, FiLogOut, FiMenu, FiSettings } from 'react-icons/fi';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -19,10 +19,11 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/dashboard', icon: FiHome, label: 'Dashboard' },
-    { path: '/employees', icon: FiUsers, label: 'Employees' },
-    { path: '/shifts', icon: FiClock, label: 'Shifts' },
-    { path: '/roster', icon: FiCalendar, label: 'Roster' },
   ];
+
+  if (user?.role === 'super_admin') {
+    navItems.push({ path: '/admin', icon: FiSettings, label: 'Admin' });
+  }
 
   return (
     <nav className="navbar">

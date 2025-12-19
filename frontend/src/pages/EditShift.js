@@ -10,7 +10,8 @@ const EditShift = () => {
     shift_code: '',
     duration: '',
     type: 'full',
-    shift_timing: ''
+    shift_start: '',
+    shift_end: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,46 @@ const EditShift = () => {
   const fetchShift = async () => {
     try {
       const response = await shiftAPI.getById(shiftId);
-      setFormData(response.data);
+      const data = response.data;
+      const parseTo24h = (timeStr) => {
+        if (!timeStr) return '';
+        // Supports "HH:MM" or "h:mm AM/PM"
+        const ampmMatch = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+        if (ampmMatch) {
+          let h = parseInt(ampmMatch[1], 10);
+          const m = parseInt(ampmMatch[2], 10);
+          const mer = ampmMatch[3].toUpperCase();
+          if (mer === 'PM' && h !== 12) h += 12;
+          if (mer === 'AM' && h === 12) h = 0;
+          return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+        // Fallback for 24h "HH:MM"
+        const plain = timeStr.trim().match(/^(\d{1,2}):(\d{2})$/);
+        if (plain) {
+          const h = parseInt(plain[1], 10);
+          const m = parseInt(plain[2], 10);
+          return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+        return '';
+      };
+
+      let start = '', end = '';
+      if (data.shift_timing && typeof data.shift_timing === 'string') {
+        const parts = data.shift_timing.split('-');
+        if (parts.length === 2) {
+          start = parseTo24h(parts[0]);
+          end = parseTo24h(parts[1]);
+        }
+      }
+
+      setFormData({
+        shift_name: data.shift_name || '',
+        shift_code: data.shift_code || '',
+        duration: data.duration || '',
+        type: data.type || 'full',
+        shift_start: start,
+        shift_end: end
+      });
       setError('');
     } catch (err) {
       setError('Failed to load shift details');
@@ -45,13 +85,19 @@ const EditShift = () => {
     e.preventDefault();
     setError('');
     setSaving(true);
-
+    const toAmPm = (t) => {
+      if (!t) return '';
+      const [h, m] = t.split(':').map(Number);
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hour12 = ((h + 11) % 12) + 1;
+      return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+    };
     const payload = {
       shift_name: formData.shift_name,
       shift_code: formData.shift_code,
       duration: parseInt(formData.duration),
       type: formData.type,
-      shift_timing: formData.shift_timing
+      shift_timing: `${toAmPm(formData.shift_start)} - ${toAmPm(formData.shift_end)}`
     };
 
     try {
@@ -148,18 +194,32 @@ const EditShift = () => {
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Shift Timing *</label>
-              <input
-                type="text"
-                name="shift_timing"
-                className="form-control"
-                value={formData.shift_timing}
-                onChange={handleChange}
-                placeholder="e.g., 09:00 - 17:00"
-                required
-                disabled={saving}
-              />
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Start Time *</label>
+                <input
+                  type="time"
+                  name="shift_start"
+                  className="form-control"
+                  value={formData.shift_start}
+                  onChange={handleChange}
+                  required
+                  disabled={saving}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">End Time *</label>
+                <input
+                  type="time"
+                  name="shift_end"
+                  className="form-control"
+                  value={formData.shift_end}
+                  onChange={handleChange}
+                  required
+                  disabled={saving}
+                />
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
