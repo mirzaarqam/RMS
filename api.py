@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 import csv
@@ -11,6 +12,9 @@ import json
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.secret_key = 'your_secret_key_change_in_production'
+
+# Enable debug logging for diagnostics
+app.logger.setLevel(logging.DEBUG)
 
 # Session store using SQLite for persistence
 def init_sessions_db():
@@ -281,6 +285,12 @@ def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
+    try:
+        app.logger.info(
+            f"Login attempt: username={username!r}, password_len={len(password or '')}"
+        )
+    except Exception:
+        pass
 
     conn = get_db()
     cursor = conn.cursor()
@@ -288,12 +298,23 @@ def login():
     row = cursor.fetchone()
     conn.close()
 
+    try:
+        app.logger.info(f"User row found: {bool(row)}")
+    except Exception:
+        pass
+
     if not row:
         return jsonify({'error': 'Invalid credentials'}), 401
     user = dict(row)
     if not user['active']:
         return jsonify({'error': 'User is deactivated'}), 403
-    if not check_password_hash(user['password_hash'], password or ''):
+    chk = False
+    try:
+        chk = check_password_hash(user['password_hash'], password or '')
+        app.logger.info(f"Password check result: {chk}")
+    except Exception as e:
+        app.logger.error(f"Password check error: {e}")
+    if not chk:
         return jsonify({'error': 'Invalid credentials'}), 401
 
     token = f"token_{datetime.now().timestamp()}"
