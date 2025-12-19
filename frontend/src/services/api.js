@@ -56,6 +56,8 @@ export const authAPI = {
   login: (username, password) => api.post('/login', { username, password }),
   logout: () => api.post('/logout'),
   validate: () => api.get('/validate'),
+  changePassword: (current_password, new_password, confirm_password) =>
+    api.put('/users/me/password', { current_password, new_password, confirm_password }),
 };
 
 // Admin APIs

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { statsAPI, teamsAPI } from '../services/api';
-import { FiUsers, FiClock, FiCalendar, FiArrowRight, FiLayers } from 'react-icons/fi';
+import { FiUsers, FiClock, FiCalendar, FiArrowRight, FiLayers, FiLock } from 'react-icons/fi';
+import { authAPI } from '../services/api';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,6 +16,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwdMsg, setPwdMsg] = useState('');
+  const [pwdBusy, setPwdBusy] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'super_admin') {
@@ -47,6 +51,30 @@ const Dashboard = () => {
       setTeams(response.data || []);
     } catch (err) {
       console.error('Failed to load teams:', err);
+    }
+  };
+
+  const submitPasswordChange = async (e) => {
+    e.preventDefault();
+    setPwdMsg('');
+    if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) {
+      setPwdMsg('Please fill all fields');
+      return;
+    }
+    if (pwdForm.next !== pwdForm.confirm) {
+      setPwdMsg('New passwords do not match');
+      return;
+    }
+    try {
+      setPwdBusy(true);
+      await authAPI.changePassword(pwdForm.current, pwdForm.next, pwdForm.confirm);
+      setPwdMsg('Password changed successfully');
+      setPwdForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Failed to change password';
+      setPwdMsg(msg);
+    } finally {
+      setPwdBusy(false);
     }
   };
 
@@ -282,6 +310,43 @@ const Dashboard = () => {
                   </div>
                 </Link>
               ))}
+            </div>
+
+            {/* Change Password for non-super_admin roles */}
+            <div className="card" style={{ marginTop: 20 }}>
+              <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:12 }}>
+                <div style={{ width:40, height:40, borderRadius:8, background:'#fff3e0', display:'flex', alignItems:'center', justifyContent:'center', color:'#ff9800' }}>
+                  <FiLock />
+                </div>
+                <div>
+                  <h2 style={{ margin:0 }}>Change Password</h2>
+                  <p style={{ margin:0, color:'#6c757d' }}>Update your account password</p>
+                </div>
+              </div>
+              <form onSubmit={submitPasswordChange} style={{ display:'grid', gap:12, maxWidth: 480 }}>
+                {pwdMsg && (
+                  <div className={pwdMsg.includes('successfully') ? 'alert alert-success' : 'alert alert-error'}>
+                    {pwdMsg}
+                  </div>
+                )}
+                <div>
+                  <label className="form-label">Current Password</label>
+                  <input type="password" className="form-control" value={pwdForm.current} onChange={(e)=>setPwdForm(f=>({ ...f, current: e.target.value }))} disabled={pwdBusy} required />
+                </div>
+                <div>
+                  <label className="form-label">New Password</label>
+                  <input type="password" className="form-control" value={pwdForm.next} onChange={(e)=>setPwdForm(f=>({ ...f, next: e.target.value }))} disabled={pwdBusy} required />
+                </div>
+                <div>
+                  <label className="form-label">Confirm New Password</label>
+                  <input type="password" className="form-control" value={pwdForm.confirm} onChange={(e)=>setPwdForm(f=>({ ...f, confirm: e.target.value }))} disabled={pwdBusy} required />
+                </div>
+                <div>
+                  <button type="submit" className="btn btn-primary" disabled={pwdBusy}>
+                    {pwdBusy ? 'Updating...' : 'Change Password'}
+                  </button>
+                </div>
+              </form>
             </div>
           </>
         )}

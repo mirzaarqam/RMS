@@ -523,6 +523,48 @@ def reset_password(username):
         return jsonify({'error': 'User not found'}), 404
     return jsonify({'message': 'Password updated'}), 200
 
+# Self-service password change for any authenticated user
+@app.route('/api/users/me/password', methods=['PUT'])
+@require_auth
+def change_my_password():
+    data = request.json or {}
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    confirm_password = data.get('confirm_password')
+
+    if not current_password or not new_password or not confirm_password:
+        return jsonify({'error': 'current_password, new_password and confirm_password are required'}), 400
+    if new_password != confirm_password:
+        return jsonify({'error': 'New passwords do not match'}), 400
+
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT password_hash FROM users WHERE username = ?', (user['username'],))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'User not found'}), 404
+
+    # Verify current password
+    if not check_password_hash(row['password_hash'], current_password):
+        conn.close()
+        return jsonify({'error': 'Current password is incorrect'}), 401
+
+    # Update to new password
+    cursor.execute('UPDATE users SET password_hash = ?, updated_at = ? WHERE username = ?',
+                   (generate_password_hash(new_password), datetime.now().isoformat(), user['username']))
+    conn.commit()
+    updated = conn.total_changes
+    conn.close()
+
+    if updated == 0:
+        return jsonify({'error': 'Password update failed'}), 500
+    return jsonify({'message': 'Password changed successfully'}), 200
+
 # ==================== SETTINGS ====================
 
 @app.route('/api/settings', methods=['GET'])
